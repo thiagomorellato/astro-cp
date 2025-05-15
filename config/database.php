@@ -35,6 +35,19 @@ return [
 
     'connections' => [
 
+        'mysql_ragnarok' => [
+            'driver' => 'mysql',
+            'host' => env('RAG_HOST', '127.0.0.1'),
+            'port' => env('RAG_PORT', '3306'),
+            'database' => env('RAG_DATABASE', 'login'),
+            'username' => env('RAG_USERNAME', 'root'),
+            'password' => env('RAG_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => false,
+        ],
+
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DATABASE_URL'),
