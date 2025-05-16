@@ -19,7 +19,7 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 RUN composer install --no-dev --optimize-autoloader
 
 # Rodar migrações (opcional - cuidado com isso em produção)
-RUN php artisan migrate --force
+# RUN php artisan migrate --force
 
 # Expor a porta que o Apache vai escutar
 EXPOSE 80
