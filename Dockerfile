@@ -12,14 +12,24 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copiar o código para dentro do container
 COPY . /var/www/html
 
-# Definir permissões (ajuste conforme sua necessidade)
+# 🔧 Corrige o DocumentRoot do Apache para apontar para /public
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf
+
+# 🔥 Habilita mod_rewrite (necessário para Laravel)
+RUN a2enmod rewrite
+
+# 🔓 Permite o uso de .htaccess (Laravel usa isso)
+RUN sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
+
+# Permissões para storage e cache
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Instalar dependências PHP via Composer
-RUN composer install --no-dev --optimize-autoloader
+# Permissões para a pasta pública (previne erro 403)
+RUN chmod -R 755 /var/www/html/public
 
-# Rodar migrações (opcional - cuidado com isso em produção)
-# RUN php artisan migrate --force
+# Instalar dependências PHP via Composer
+WORKDIR /var/www/html
+RUN composer install --no-dev --optimize-autoloader
 
 # Expor a porta que o Apache vai escutar
 EXPOSE 80
