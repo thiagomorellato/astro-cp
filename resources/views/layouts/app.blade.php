@@ -9,6 +9,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap" rel="stylesheet" />
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+</style>
 </head>
 <body class="bg-gray-900 text-white font-['Poppins']" style="background-image: url('{{ asset('images/background.jpg') }}'); background-size: 100% 100%; background-position: center; min-height: 100vh;">
 
@@ -46,6 +49,19 @@
         <a href="/info" class="hover:text-yellow-400 transition">Info</a>
         <a href="/vote" class="hover:text-yellow-400 transition">Vote</a>
       </div>
+
+      @if(session()->has('astrocp_user'))
+        <div class="absolute right-40 bottom-1 text-sm text-white/80 hidden md:block">
+          Welcome, {{ session('astrocp_user.userid') }}. 
+          <form method="POST" action="{{ route('astrocp.logout') }}" style="display:inline;">
+            @csrf
+            <button type="submit" class="underline hover:text-yellow-400 bg-transparent border-none p-0 m-0 cursor-pointer text-sm text-white">
+              Logout
+            </button>
+          </form>
+        </div>
+      @endif
+
     </nav>
 
     <!-- Mobile menu -->
@@ -58,6 +74,19 @@
         <a href="/info" class="hover:text-yellow-400 transition">Info</a>
         <a href="/vote" class="hover:text-yellow-400 transition">Vote</a>
       </div>
+
+      @if(session()->has('astrocp_user'))
+        <div class="text-sm text-right mt-4 mr-4">
+          Welcome, {{ session('astrocp_user.userid') }}. 
+          <form method="POST" action="{{ route('astrocp.logout') }}" style="display:inline;">
+            @csrf
+            <button type="submit" class="underline hover:text-yellow-400 bg-transparent border-none p-0 m-0 cursor-pointer text-sm text-white">
+              Logout
+            </button>
+          </form>
+        </div>
+      @endif
+
     </div>
   </header>
 

@@ -1,18 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Auth\RagLoginController;
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
+use App\Http\Controllers\AstrocpLoginController;
 
 Route::get('/', function () {
     return view('index');
@@ -33,16 +22,22 @@ Route::get('/vote', function () {
     return view('vote');
 });
 
+// Login form (aponta para account.blade.php mesmo)
+Route::get('/login', function() {
+    return view('account');
+})->name('astrocp.login.form');
 
-Route::get('/account', [RagLoginController::class, 'showLoginForm']);
-Route::post('/account', [RagLoginController::class, 'login'])->name('rathena.login');
-Route::get('/logout', [RagLoginController::class, 'logout'])->name('rathena.logout');
+// Register form (nova view register.blade.php)
+Route::get('/register', [AstrocpLoginController::class, 'showRegisterForm'])->name('astrocp.register.form');
 
-Route::get('/test-db-connection', function () {
-    try {
-        DB::connection('mysql_ragnarok')->getPdo();
-        return 'Conexão com o banco Ragnarok OK!';
-    } catch (\Exception $e) {
-        return 'Erro ao conectar: ' . $e->getMessage();
-    }
-});
+// Register POST
+Route::post('/register', [AstrocpLoginController::class, 'register'])->name('astrocp.register');
+
+// Login POST
+Route::post('/login', [AstrocpLoginController::class, 'login'])->name('astrocp.login');
+
+// Logout POST
+Route::post('/astrocp/logout', function () {
+    session()->forget('astrocp_user');
+    return redirect('/');
+})->name('astrocp.logout');

@@ -35,17 +35,19 @@ return [
 
     'connections' => [
 
-        'mysql_ragnarok' => [
+        'ragnarok' => [
             'driver' => 'mysql',
             'host' => env('RAG_HOST', '127.0.0.1'),
             'port' => env('RAG_PORT', '3306'),
-            'database' => env('RAG_DATABASE', 'login'),
+            'database' => env('RAG_DATABASE', 'ragnarok'),
             'username' => env('RAG_USERNAME', 'root'),
             'password' => env('RAG_PASSWORD', ''),
+            'unix_socket' => env('DB_SOCKET', ''),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'prefix' => '',
             'strict' => false,
+            'engine' => null,
         ],
 
         'sqlite' => [
