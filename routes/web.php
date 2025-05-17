@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AstrocpLoginController;
+use App\Http\Controllers\PayPalController;
 
 Route::get('/', function () {
     return view('index');
@@ -42,7 +43,12 @@ Route::post('/astrocp/logout', function () {
     return redirect('/');
 })->name('astrocp.logout');
 
+// Página da doação PayPal
 Route::view('/donations/paypal', 'donations.paypal')->name('donations.paypal');
-Route::get('/buy', [PayPalController::class, 'createOrder'])->name('paypal.buy');
-Route::get('/paypal/success', [PayPalController::class, 'captureOrder'])->name('paypal.success');
-Route::get('/paypal/cancel', [PayPalController::class, 'cancel'])->name('paypal.cancel');
+
+// Grupo de rotas PayPal
+Route::prefix('paypal')->name('paypal.')->group(function () {
+    Route::get('/buy', [PayPalController::class, 'createOrder'])->name('buy');
+    Route::get('/success', [PayPalController::class, 'captureOrder'])->name('success');
+    Route::get('/cancel', [PayPalController::class, 'cancel'])->name('cancel');
+});
