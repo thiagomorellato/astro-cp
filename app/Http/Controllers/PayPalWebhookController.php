@@ -14,13 +14,16 @@ class PayPalWebhookController extends Controller
      */
     public function handle(Request $request)
     {
+        // Loga o payload para debugging
+        Log::info('Received PayPal webhook:', $request->all());
+
         $headers = [
             'paypal-transmission-id' => $request->header('Paypal-Transmission-Id'),
             'paypal-transmission-time' => $request->header('Paypal-Transmission-Time'),
             'paypal-cert-url' => $request->header('Paypal-Cert-Url'),
             'paypal-auth-algo' => $request->header('Paypal-Auth-Algo'),
             'paypal-transmission-sig' => $request->header('Paypal-Transmission-Sig'),
-            'webhook-id' => config('services.paypal.webhook_id'), // Você deve configurar o ID do webhook do PayPal no .env/config
+            'webhook-id' => config('services.paypal.webhook_id'), // Configure no .env e services.php
         ];
 
         $body = $request->getContent();
@@ -53,11 +56,7 @@ class PayPalWebhookController extends Controller
                 return response()->json(['error' => 'Incomplete payment data'], 400);
             }
 
-            // Aqui você pode pegar o user_id / account_id do banco, relacionando pelo paypalOrderId,
-            // se estiver salvando os pedidos criados na sua tabela donations_pp (ex: status pending).
-            // Ou você pode usar a metadata/custom fields no pedido para guardar o user_id.
-
-            // Exemplo: buscar doação pendente com esse paypalOrderId
+            // Buscar doação pendente com esse paypalOrderId
             $donation = DB::connection('ragnarok')->table('donations_pp')
                 ->where('paypal_order_id', $paypalOrderId)
                 ->first();
@@ -74,10 +73,10 @@ class PayPalWebhookController extends Controller
 
             $accountId = $donation->account_id;
 
-            // Calcular créditos, baseado no valor recebido e sua taxa
+            // Calcular créditos baseado no valor recebido e taxa configurada
             $credits = intval(floatval($amount) * config('services.paypal.conversion_rate', 1000));
 
-            // Atualizar créditos
+            // Atualizar créditos na tabela acc_reg_num
             $existing = DB::connection('ragnarok')->table('acc_reg_num')
                 ->where('account_id', $accountId)
                 ->where('key', '#CASHPOINTS')
@@ -98,7 +97,7 @@ class PayPalWebhookController extends Controller
                 ]);
             }
 
-            // Atualiza o status da doação para sucesso e valores atualizados
+            // Atualizar status da doação para sucesso
             DB::connection('ragnarok')->table('donations_pp')
                 ->where('id', $donation->id)
                 ->update([
@@ -113,13 +112,13 @@ class PayPalWebhookController extends Controller
             return response()->json(['message' => 'Payment processed successfully']);
         }
 
-        // Ignorar outros eventos, mas responder 200 OK para PayPal não repetir
+        // Ignorar outros eventos, mas responder 200 OK para PayPal não reenviar
         return response()->json(['message' => 'Event ignored']);
     }
 
     /**
      * Valida o webhook usando a API do PayPal.
-     * 
+     *
      * @param array $headers
      * @param string $body
      * @return bool
@@ -127,6 +126,11 @@ class PayPalWebhookController extends Controller
     private function validateWebhook(array $headers, string $body): bool
     {
         $accessToken = $this->getAccessToken();
+
+        if (!$accessToken) {
+            Log::error('No PayPal access token available for webhook validation');
+            return false;
+        }
 
         $response = Http::withToken($accessToken)
             ->post(config('services.paypal.base_url') . '/v1/notifications/verify-webhook-signature', [
