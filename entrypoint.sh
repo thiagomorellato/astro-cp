@@ -10,7 +10,7 @@ chmod 600 /root/.ssh/id_ed25519
 echo -e "Host *\n\tStrictHostKeyChecking no\n" > /root/.ssh/config
 
 # 🔌 Inicia o túnel SSH
-ssh -i /root/.ssh/id_ed25519 -N -L 3307:127.0.0.1:3306 root@http://159.203.42.146/ &
+ssh -i /root/.ssh/id_ed25519 -N -L 3307:127.0.0.1:3306 root@159.203.42.146 &
 
 # ✅ Depois disso, inicia o Apache normalmente
 exec apache2-foreground
