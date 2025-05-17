@@ -1,16 +1,18 @@
 #!/bin/bash
 set -e
 
-# Copiar a chave da pasta de secrets para ~/.ssh e ajustar permissão
+# Preparar chave
 mkdir -p /root/.ssh
 cp /etc/secrets/id_ed25519 /root/.ssh/id_ed25519
 chmod 600 /root/.ssh/id_ed25519
 
-# Desabilita StrictHostKeyChecking para evitar prompt
+# Evitar prompt de verificação
 echo -e "Host *\n\tStrictHostKeyChecking no\n" > /root/.ssh/config
 
-# 🔌 Inicia o túnel SSH
-ssh -i /root/.ssh/id_ed25519 -N -L 3307:127.0.0.1:3306 root@159.203.42.146 &
+# Iniciar túnel com reconexão automática
+autossh -M 0 -N -i /root/.ssh/id_ed25519 \
+-o "ServerAliveInterval 60" -o "ServerAliveCountMax 3" \
+-L 3307:127.0.0.1:3306 root@159.203.42.146 &
 
-# ✅ Depois disso, inicia o Apache normalmente
+# Iniciar Apache
 exec apache2-foreground
