@@ -52,3 +52,11 @@ Route::prefix('paypal')->name('paypal.')->group(function () {
     Route::get('/cancel', [PayPalController::class, 'cancel'])->name('cancel');
     Route::get('/failed', [PayPalController::class, 'failed'])->name('failed');
 });
+
+Route::get('/donations/payment-successful', function () {
+    return view('donations.payment_successful');
+})->name('donations.payment_successful');
+
+Route::get('/donations/payment-cancelled', function () {
+    return view('donations.payment_cancelled');
+})->name('donations.payment_cancelled');

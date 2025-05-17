@@ -113,7 +113,7 @@ class PayPalController extends Controller
             'updated_at' => now(),
         ]);
 
-        return redirect('/donations/payment_successful')->with('success', "Purchase successful! You received {$credits} Star Credits.");
+        return redirect('/donations/payment-successful')->with('success', "Purchase successful! You received {$credits} Star Credits.");
     }
 
     public function cancel(Request $request)
@@ -138,7 +138,7 @@ class PayPalController extends Controller
             }
         }
 
-        return redirect('/donations/payment_failed')->with('error', 'Purchase canceled.');
+        return redirect('/donations/payment-failed')->with('error', 'Purchase canceled.');
     }
 
     private function getAccessToken()
