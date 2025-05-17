@@ -60,3 +60,7 @@ Route::get('/donations/payment-successful', function () {
 Route::get('/donations/payment-cancelled', function () {
     return view('donations.payment_cancelled');
 })->name('donations.payment_cancelled');
+
+use App\Http\Controllers\PayPalWebhookController;
+
+Route::post('/paypal/webhook', [PayPalWebhookController::class, 'handle'])->name('paypal.webhook');
