@@ -91,7 +91,7 @@
   </header>
 
   <!-- Main content -->
-  <div class="pt-24 px-4 max-w-screen-xl mx-auto text-center">
+  <div class="flex-grow pt-24 px-4 max-w-screen-xl mx-auto text-center">
     <img src="{{ asset('images/logofundo.svg') }}" alt="Astro Fundo Logo" class="h-[30vh] mx-auto mb-8">
     
     @yield('content')
