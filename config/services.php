@@ -32,9 +32,10 @@ return [
     ],
 
     'paypal' => [
-    'client_id' => env('PAYPAL_CLIENT_ID'),
-    'secret' => env('PAYPAL_SECRET'),
-    'base_url' => env('PAYPAL_BASE_URL'),
+        'client_id' => env('PAYPAL_CLIENT_ID'),
+        'secret' => env('PAYPAL_SECRET'),
+        'base_url' => env('PAYPAL_BASE_URL', 'https://api-m.sandbox.paypal.com'),
+        'conversion_rate' => 1000, // 1 USD = 20 créditos
     ],
 
 ];

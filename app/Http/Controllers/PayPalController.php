@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
 
 class PayPalController extends Controller
 {
@@ -35,13 +36,61 @@ class PayPalController extends Controller
     {
         $accessToken = $this->getAccessToken();
 
+        $orderId = $request->query('token');
+        if (!$orderId) {
+            return redirect('/account')->with('error', 'Invalid PayPal token.');
+        }
+
         $response = Http::withToken($accessToken)
-            ->post(config('services.paypal.base_url') . '/v2/checkout/orders/' . $request->query('token') . '/capture');
+            ->post(config('services.paypal.base_url') . "/v2/checkout/orders/{$orderId}/capture");
 
-        // Aqui você pode inserir os créditos na conta do jogador
-        // Exemplo: incrementar 100 Star Credits
+        if ($response->failed()) {
+            return redirect('/account')->with('error', 'Failed to capture PayPal order.');
+        }
 
-        return redirect('/account')->with('success', 'Purchase successful!');
+        $orderData = $response->json();
+
+        $amount = (float) ($orderData['purchase_units'][0]['payments']['captures'][0]['amount']['value'] ?? 0);
+
+        if ($amount <= 0) {
+            return redirect('/account')->with('error', 'Invalid payment amount.');
+        }
+
+        $credits = intval($amount * config('services.paypal.conversion_rate', 20));
+
+        $user = session('astrocp_user');
+        if (!$user) {
+            return redirect('/account')->with('error', 'User session not found.');
+        }
+
+        $login = DB::connection('ragnarok')->table('login')->where('userid', $user['userid'])->first();
+        if (!$login) {
+            return redirect('/account')->with('error', 'User not found in login table.');
+        }
+
+        $accountId = $login->account_id;
+
+        $existing = DB::connection('ragnarok')->table('acc_reg_num')
+            ->where('account_id', $accountId)
+            ->where('key', '#CASHPOINTS')
+            ->first();
+
+        if ($existing) {
+            DB::connection('ragnarok')->table('acc_reg_num')
+                ->where('account_id', $accountId)
+                ->where('key', '#CASHPOINTS')
+                ->update([
+                    'value' => $existing->value + $credits,
+                ]);
+        } else {
+            DB::connection('ragnarok')->table('acc_reg_num')->insert([
+                'account_id' => $accountId,
+                'key' => '#CASHPOINTS',
+                'value' => $credits,
+            ]);
+        }
+
+        return redirect('/account')->with('success', "Purchase successful! You received {$credits} Star Credits.");
     }
 
     public function cancel()

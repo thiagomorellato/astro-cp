@@ -31,7 +31,7 @@
             </div>
 
             <!-- <=> Icon -->
-            <div class="text-yellow-400 text-xl font-bold select-none">⇄</div>
+            <div class="text-yellow-400 text-xl align-middle font-bold select-none">⇄</div>
 
             <!-- SC input -->
             <div class="w-1/2">
