@@ -48,7 +48,7 @@
         </div>
 
         <!-- Hidden amount field -->
-        <input type="hidden" name="amount" :value="usd.toFixed(2)" />
+        <input type="hidden" name="amount" :value="Number(usd).toFixed(2)" />
 
         <button 
             type="submit"
@@ -63,8 +63,8 @@
     function donationForm() {
         return {
             usd: 5,
-            sc: 500,
-            rate: 1000, // 1 USD = 100 SC
+            sc: 5000,
+            rate: 1000, // 1 USD = 1000 SC
             init() {
                 this.syncFromUSD();
             },
@@ -72,7 +72,7 @@
                 this.sc = Math.round(this.usd * this.rate);
             },
             syncFromSC() {
-                this.usd = (this.sc / this.rate).toFixed(2);
+                this.usd = parseFloat((this.sc / this.rate).toFixed(2));
             }
         }
     }
