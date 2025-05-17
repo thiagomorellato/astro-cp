@@ -21,12 +21,51 @@
 
         <form method="POST" action="{{ route('astrocp.register') }}" onsubmit="handleRegisterLoading(event)">
             @csrf
-            <input type="text" name="userid" placeholder="Username" value="{{ old('userid') }}"
-                   class="w-full mb-4 p-2 rounded bg-white/20 placeholder-white text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" />
-            <input type="password" name="password" placeholder="Password"
-                   class="w-full mb-4 p-2 rounded bg-white/20 placeholder-white text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" />
-            <input type="email" name="email" placeholder="Email" value="{{ old('email') }}"
-                   class="w-full mb-4 p-2 rounded bg-white/20 placeholder-white text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+
+            {{-- USERNAME --}}
+            <input 
+                type="text" 
+                name="userid" 
+                placeholder="Username" 
+                value="{{ old('userid') }}"
+                pattern="[a-zA-Z0-9]+"
+                title="Username must contain only letters and numbers"
+                minlength="4"
+                maxlength="23"
+                required
+                class="w-full mb-1 p-2 rounded bg-white/20 placeholder-white text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" 
+            />
+            @error('userid')
+                <p class="text-red-400 text-sm mb-3">{{ $message }}</p>
+            @enderror
+
+            {{-- PASSWORD --}}
+            <input 
+                type="password" 
+                name="password" 
+                placeholder="Password"
+                minlength="6"
+                maxlength="32"
+                required
+                class="w-full mb-1 p-2 rounded bg-white/20 placeholder-white text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" 
+            />
+            @error('password')
+                <p class="text-red-400 text-sm mb-3">{{ $message }}</p>
+            @enderror
+
+            {{-- EMAIL --}}
+            <input 
+                type="email" 
+                name="email" 
+                placeholder="Email" 
+                value="{{ old('email') }}"
+                maxlength="39"
+                required
+                class="w-full mb-1 p-2 rounded bg-white/20 placeholder-white text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" 
+            />
+            @error('email')
+                <p class="text-red-400 text-sm mb-3">{{ $message }}</p>
+            @enderror
 
             <button id="register-btn" type="submit"
                     class="w-full bg-gray-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2">
@@ -40,14 +79,6 @@
                 <span id="register-text">Register</span>
             </button>
         </form>
-
-        @if ($errors->any())
-            <div class="mt-4 text-red-400">
-                @foreach ($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                @endforeach
-            </div>
-        @endif
 
         <p class="mt-4 text-sm text-white/80">
             Already have an account? <a href="{{ route('astrocp.login.form') }}" class="underline hover:text-yellow-400">Log in</a>
@@ -64,5 +95,13 @@
             spinner.classList.remove('hidden');
             text.textContent = 'Creating account...';
         }
+
+        // Reforço JS para remover caracteres inválidos no userid
+        document.addEventListener('DOMContentLoaded', () => {
+            const useridInput = document.querySelector('input[name="userid"]');
+            useridInput.addEventListener('input', () => {
+                useridInput.value = useridInput.value.replace(/[^a-zA-Z0-9]/g, '');
+            });
+        });
     </script>
 @endsection
