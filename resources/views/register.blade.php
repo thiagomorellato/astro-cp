@@ -33,7 +33,7 @@
                 minlength="4"
                 maxlength="23"
                 required
-                class="w-full mb-1 p-2 rounded bg-white/20 placeholder-white text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" 
+                class="w-full mb-4 p-2 rounded bg-white/20 placeholder-white text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" 
             />
             @error('userid')
                 <p class="text-red-400 text-sm mb-3">{{ $message }}</p>
@@ -47,7 +47,16 @@
                 minlength="6"
                 maxlength="32"
                 required
-                class="w-full mb-1 p-2 rounded bg-white/20 placeholder-white text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" 
+                class="w-full mb-4 p-2 rounded bg-white/20 placeholder-white text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" 
+            />
+            <input 
+                type="password" 
+                name="password_confirmation" 
+                placeholder="Confirm Password"
+                minlength="6"
+                maxlength="32"
+                required
+                class="w-full mb-4 p-2 rounded bg-white/20 placeholder-white text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" 
             />
             @error('password')
                 <p class="text-red-400 text-sm mb-3">{{ $message }}</p>
@@ -61,7 +70,7 @@
                 value="{{ old('email') }}"
                 maxlength="39"
                 required
-                class="w-full mb-1 p-2 rounded bg-white/20 placeholder-white text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" 
+                class="w-full mb-4 p-2 rounded bg-white/20 placeholder-white text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" 
             />
             @error('email')
                 <p class="text-red-400 text-sm mb-3">{{ $message }}</p>

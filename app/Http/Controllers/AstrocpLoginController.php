@@ -43,7 +43,7 @@ class AstrocpLoginController extends Controller
     {
         $request->validate([
             'userid' => 'required|min:4|max:23|alpha_num|unique:ragnarok.login,userid',
-            'password' => 'required|min:6|max:32',
+            'password' => 'required|string|min:6|max:32|confirmed',
             'email' => 'required|email|max:39',
         ]);
 
