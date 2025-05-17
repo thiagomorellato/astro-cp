@@ -113,7 +113,10 @@ class PayPalController extends Controller
             'updated_at' => now(),
         ]);
 
-        return redirect('/donations/payment-successful')->with('success', "Purchase successful! You received {$credits} Star Credits.");
+        return redirect('/donations/payment-successful')
+    ->with('success', 'Purchase successful!')
+    ->with('credits', $credits);
+
     }
 
     public function cancel(Request $request)
