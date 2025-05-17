@@ -15,7 +15,7 @@
         <span class="italic text-xs text-yellow-300">1 USD = 1000 SC</span>
     </p>
 
-    <form action="{{ route('paypal.buy') }}" method="POST" class="space-y-6">
+    <form action="{{ route('paypal.buy') }}" method="GET" class="space-y-6">
         <div class="flex items-center gap-2">
             <!-- USD input -->
             <div class="w-1/2">

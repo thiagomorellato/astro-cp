@@ -48,7 +48,7 @@ Route::view('/donations/paypal', 'donations.paypal')->name('donations.paypal');
 
 // Grupo de rotas PayPal
 Route::prefix('paypal')->name('paypal.')->group(function () {
-    Route::post('/buy', [PayPalController::class, 'createOrder'])->name('buy');
+    Route::get('/buy', [PayPalController::class, 'createOrder'])->name('buy');
     Route::get('/success', [PayPalController::class, 'captureOrder'])->name('success');
     Route::get('/cancel', [PayPalController::class, 'cancel'])->name('cancel');
 });
