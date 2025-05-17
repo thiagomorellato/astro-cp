@@ -1,7 +1,7 @@
 FROM php:8.1-apache
 
 RUN apt-get update && apt-get install -y \
-    libzip-dev zip unzip git curl \
+    libzip-dev zip unzip git curl openssh-client \
     && docker-php-ext-install zip pdo pdo_mysql
 
 # Instalar Node.js e npm
@@ -31,6 +31,10 @@ RUN composer install --no-dev --optimize-autoloader
 # Frontend build
 RUN npm install && npm run build
 
+# Copiar o script entrypoint
+COPY entrypoint.sh /var/www/html/entrypoint.sh
+RUN chmod +x /var/www/html/entrypoint.sh
+
 EXPOSE 80
 
-CMD ["apache2-foreground"]
+CMD ["/var/www/html/entrypoint.sh"]
