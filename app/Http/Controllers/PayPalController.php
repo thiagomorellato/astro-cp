@@ -11,14 +11,14 @@ class PayPalController extends Controller
     public function createOrder(Request $request)
     {
         $accessToken = $this->getAccessToken();
-
+        $value = number_format((float) $request->input('amount', 5.00), 2, '.', '');
         $response = Http::withToken($accessToken)
             ->post(config('services.paypal.base_url') . '/v2/checkout/orders', [
                 'intent' => 'CAPTURE',
                 'purchase_units' => [[
                     'amount' => [
                         'currency_code' => 'USD',
-                        'value' => $request->input('amount', '5.00'),
+                        'value' => $value,
                     ],
                 ]],
                 'application_context' => [
