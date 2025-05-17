@@ -79,24 +79,24 @@ class PayPalController extends Controller
             return redirect('/donations/payment-cancelled')->with('error', 'User not found in login table.');
         }
 
-        $accountId = $login->account_id; // <-- aqui, pega o account_id!
+        $userid = $login->userid;
 
         // Atualiza os créditos
         $existing = DB::connection('ragnarok')->table('acc_reg_num')
-            ->where('account_id', $accountId)
+            ->where('account_id', $userid)
             ->where('key', '#CASHPOINTS')
             ->first();
 
         if ($existing) {
             DB::connection('ragnarok')->table('acc_reg_num')
-                ->where('account_id', $accountId)
+                ->where('account_id', $userid)
                 ->where('key', '#CASHPOINTS')
                 ->update([
                     'value' => $existing->value + $credits,
                 ]);
         } else {
             DB::connection('ragnarok')->table('acc_reg_num')->insert([
-                'account_id' => $accountId,
+                'account_id' => $userid,
                 'key' => '#CASHPOINTS',
                 'value' => $credits,
             ]);
@@ -104,7 +104,7 @@ class PayPalController extends Controller
 
         // Registra a doação como sucesso
         DB::connection('ragnarok')->table('donations_pp')->insert([
-            'account_id' => $accountId,
+            'userid' => $userid,
             'amount_usd' => $amount,
             'credits' => $credits,
             'paypal_order_id' => $paypalOrderId,
@@ -113,7 +113,7 @@ class PayPalController extends Controller
             'updated_at' => now(),
         ]);
 
-        return redirect('/donations/payment-successful')->with('success', "Purchase successful! You received {$credits} Star Credits.");
+        return redirect('/donations/payment_successful')->with('success', "Purchase successful! You received {$credits} Star Credits.");
     }
 
     public function cancel(Request $request)
@@ -124,10 +124,8 @@ class PayPalController extends Controller
         if ($user && $paypalOrderId) {
             $login = DB::connection('ragnarok')->table('login')->where('userid', $user['userid'])->first();
             if ($login) {
-                $accountId = $login->account_id;
-
                 DB::connection('ragnarok')->table('donations_pp')->insert([
-                    'account_id' => $accountId,
+                    'userid' => $login->userid,
                     'amount_usd' => 0,
                     'credits' => 0,
                     'paypal_order_id' => $paypalOrderId,
@@ -138,7 +136,7 @@ class PayPalController extends Controller
             }
         }
 
-        return redirect('/donations/payment-cancelled')->with('error', 'Purchase canceled.');
+        return redirect('/donations/payment_cancelled')->with('error', 'Purchase canceled.');
     }
 
     private function getAccessToken()
