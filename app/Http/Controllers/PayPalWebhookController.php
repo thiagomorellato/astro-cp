@@ -26,10 +26,10 @@ class PayPalWebhookController extends Controller
         $body = $request->getContent();
 
         // Validar webhook com a API do PayPal para garantir que é legítimo
-        //if (!$this->validateWebhook($headers, $body)) {
-        //    Log::warning('Invalid PayPal webhook signature');
-        //    return response()->json(['error' => 'Invalid signature'], 400);
-        //}
+        if (!$this->validateWebhook($headers, $body)) {
+            Log::warning('Invalid PayPal webhook signature');
+            return response()->json(['error' => 'Invalid signature'], 400);
+        }
 
         $payload = json_decode($body, true);
 
