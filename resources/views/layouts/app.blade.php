@@ -97,5 +97,10 @@
     @yield('content')
   </div>
 
+    <!-- Footer -->
+    <footer class="bg-black/70 text-white text-sm text-center py-4 mt-8">
+    &copy; {{ date('Y') }} astRO. All rights reserved.
+  </footer>
+
 </body>
 </html>
