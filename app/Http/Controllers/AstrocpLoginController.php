@@ -52,6 +52,7 @@ class AstrocpLoginController extends Controller
             'user_pass' => md5($request->password),
             'sex' => 'M',
             'email' => $request->email,
+            'character_slot' => '15'
         ]);
 
         return view('register_success');
