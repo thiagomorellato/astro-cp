@@ -20,7 +20,7 @@
     </p>
 
 <div class="flex flex-col justify-center mb-2 space-y-4 max-w-xs mx-auto">
-  <a href="#" class="bg-gray-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition w-full text-center">
+  <a href="{{ route('donations.paypal') }}" class="bg-gray-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition w-full text-center">
     Donate via PayPal
   </a>
   <a href="#" class="bg-gray-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition w-full text-center">

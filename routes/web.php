@@ -41,3 +41,8 @@ Route::post('/astrocp/logout', function () {
     session()->forget('astrocp_user');
     return redirect('/');
 })->name('astrocp.logout');
+
+Route::view('/donations/paypal', 'donations.paypal')->name('donations.paypal');
+Route::get('/buy', [PayPalController::class, 'createOrder'])->name('paypal.buy');
+Route::get('/paypal/success', [PayPalController::class, 'captureOrder'])->name('paypal.success');
+Route::get('/paypal/cancel', [PayPalController::class, 'cancel'])->name('paypal.cancel');
