@@ -51,6 +51,7 @@ class PayPalController extends Controller
         }
 
         $response = Http::withToken($accessToken)
+            ->withBody('', 'application/json') // Especifica que o corpo está vazio
             ->post(config('services.paypal.base_url') . "/v2/checkout/orders/{$orderId}/capture");
 
         if ($response->failed()) {
