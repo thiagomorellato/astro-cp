@@ -11,7 +11,6 @@ class PayPalController extends Controller
     public function createOrder(Request $request)
     {
         $accessToken = $this->getAccessToken();
-
         $value = number_format((float) $request->input('amount', 5.00), 2, '.', '');
 
         $response = Http::withToken($accessToken)
@@ -30,14 +29,14 @@ class PayPalController extends Controller
             ]);
 
         if ($response->failed()) {
-            return redirect('/account')->with('error', 'Failed to create PayPal order. ' . $response->body());
+            return redirect('/donations/payment-cancelled')->with('error', 'Failed to create PayPal order. ' . $response->body());
         }
 
         $order = $response->json();
         $approveLink = collect($order['links'] ?? [])->firstWhere('rel', 'approve');
 
         if (!$approveLink || !isset($approveLink['href'])) {
-            return redirect('/account')->with('error', 'No approval link returned from PayPal.');
+            return redirect('/donations/payment-cancelled')->with('error', 'No approval link returned from PayPal.');
         }
 
         return redirect($approveLink['href']);
@@ -46,10 +45,10 @@ class PayPalController extends Controller
     public function captureOrder(Request $request)
     {
         $accessToken = $this->getAccessToken();
-
         $orderId = $request->query('token');
+
         if (!$orderId) {
-            return redirect()->route('paypal.failed')->with('error', 'Invalid PayPal token.');
+            return redirect('/donations/payment-cancelled')->with('error', 'Invalid PayPal token.');
         }
 
         $response = Http::withToken($accessToken)
@@ -57,69 +56,87 @@ class PayPalController extends Controller
             ->post(config('services.paypal.base_url') . "/v2/checkout/orders/{$orderId}/capture");
 
         if ($response->failed()) {
-            return redirect()->route('paypal.failed')->with('error', 'Failed to capture PayPal order. ' . $response->body());
+            return redirect('/donations/payment-cancelled')->with('error', 'Failed to capture PayPal order. ' . $response->body());
         }
 
         $orderData = $response->json();
-
-        $capture = $orderData['purchase_units'][0]['payments']['captures'][0] ?? null;
-
-        if (!$capture || $capture['status'] !== 'COMPLETED') {
-            return redirect()->route('paypal.failed')->with('error', 'Payment not completed. Status: ' . ($capture['status'] ?? 'unknown'));
-        }
-
-        $amount = (float) ($capture['amount']['value'] ?? 0);
+        $amount = (float) ($orderData['purchase_units'][0]['payments']['captures'][0]['amount']['value'] ?? 0);
+        $paypalOrderId = $orderData['id'] ?? null;
 
         if ($amount <= 0) {
-            return redirect()->route('paypal.failed')->with('error', 'Invalid payment amount.');
+            return redirect('/donations/payment-cancelled')->with('error', 'Invalid payment amount.');
         }
 
-        $credits = intval($amount * config('services.paypal.conversion_rate', 20));
+        $credits = intval($amount * config('services.paypal.conversion_rate', 1000));
 
         $user = session('astrocp_user');
         if (!$user) {
-            return redirect()->route('paypal.failed')->with('error', 'User session not found.');
+            return redirect('/donations/payment-cancelled')->with('error', 'User session not found.');
         }
 
         $login = DB::connection('ragnarok')->table('login')->where('userid', $user['userid'])->first();
         if (!$login) {
-            return redirect()->route('paypal.failed')->with('error', 'User not found in login table.');
+            return redirect('/donations/payment-cancelled')->with('error', 'User not found in login table.');
         }
 
-        $accountId = $login->account_id;
+        $userid = $login->userid;
 
+        // Atualiza os créditos
         $existing = DB::connection('ragnarok')->table('acc_reg_num')
-            ->where('account_id', $accountId)
+            ->where('account_id', $userid)
             ->where('key', '#CASHPOINTS')
             ->first();
 
         if ($existing) {
             DB::connection('ragnarok')->table('acc_reg_num')
-                ->where('account_id', $accountId)
+                ->where('account_id', $userid)
                 ->where('key', '#CASHPOINTS')
                 ->update([
                     'value' => $existing->value + $credits,
                 ]);
         } else {
             DB::connection('ragnarok')->table('acc_reg_num')->insert([
-                'account_id' => $accountId,
+                'account_id' => $userid,
                 'key' => '#CASHPOINTS',
                 'value' => $credits,
             ]);
         }
 
-        return view('donations.payment_successful', ['credits' => $credits]);
+        // Registra a doação como sucesso
+        DB::connection('ragnarok')->table('donations_pp')->insert([
+            'userid' => $userid,
+            'amount_usd' => $amount,
+            'credits' => $credits,
+            'paypal_order_id' => $paypalOrderId,
+            'status' => 'success',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect('/donations/payment-successful')->with('success', "Purchase successful! You received {$credits} Star Credits.");
     }
 
-    public function cancel()
+    public function cancel(Request $request)
     {
-        return view('donations.payment_failed', ['message' => 'Purchase canceled.']);
-    }
+        $paypalOrderId = $request->query('token') ?? null;
 
-    public function failed(Request $request)
-    {
-        $error = session('error') ?? 'Payment failed or was declined.';
-        return view('donations.payment_failed', ['message' => $error]);
+        $user = session('astrocp_user');
+        if ($user && $paypalOrderId) {
+            $login = DB::connection('ragnarok')->table('login')->where('userid', $user['userid'])->first();
+            if ($login) {
+                DB::connection('ragnarok')->table('donations_pp')->insert([
+                    'userid' => $login->userid,
+                    'amount_usd' => 0,
+                    'credits' => 0,
+                    'paypal_order_id' => $paypalOrderId,
+                    'status' => 'cancelled',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+
+        return redirect('/donations/payment-cancelled')->with('error', 'Purchase canceled.');
     }
 
     private function getAccessToken()
