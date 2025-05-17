@@ -12,35 +12,42 @@
     </h2>
 
     <p class="text-sm text-center text-gray-300 mb-6">
-        Every dollar you donate supports the continued growth of AstRO.<br>
         <span class="italic text-xs text-yellow-300">1 USD = 100 SC</span>
     </p>
 
-    <form action="{{ route('paypal.buy') }}" method="GET" class="space-y-4">
-        <div>
-            <label for="usd" class="block text-sm text-gray-300 mb-1">Amount in USD</label>
-            <input 
-                type="number" 
-                min="1" 
-                step="0.01" 
-                x-model="usd" 
-                @input="syncFromUSD" 
-                class="w-full px-4 py-2 rounded bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-            >
+    <form action="{{ route('paypal.buy') }}" method="GET" class="space-y-6">
+        <div class="flex items-center gap-2">
+            <!-- USD input -->
+            <div class="w-1/2">
+                <label for="usd" class="block text-sm text-gray-300 mb-1">USD</label>
+                <input 
+                    type="number" 
+                    min="1" 
+                    step="0.01" 
+                    x-model="usd" 
+                    @input="syncFromUSD" 
+                    class="w-full px-4 py-2 rounded bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                >
+            </div>
+
+            <!-- <=> Icon -->
+            <div class="text-yellow-400 text-xl font-bold select-none">⇄</div>
+
+            <!-- SC input -->
+            <div class="w-1/2">
+                <label for="sc" class="block text-sm text-gray-300 mb-1">Star Credits (SC)</label>
+                <input 
+                    type="number" 
+                    min="100" 
+                    step="100" 
+                    x-model="sc" 
+                    @input="syncFromSC" 
+                    class="w-full px-4 py-2 rounded bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                >
+            </div>
         </div>
 
-        <div>
-            <label for="sc" class="block text-sm text-gray-300 mb-1">Amount in Star Credits (SC)</label>
-            <input 
-                type="number" 
-                min="100" 
-                step="100" 
-                x-model="sc" 
-                @input="syncFromSC" 
-                class="w-full px-4 py-2 rounded bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-            >
-        </div>
-
+        <!-- Hidden amount field -->
         <input type="hidden" name="amount" :value="usd.toFixed(2)" />
 
         <button 
@@ -57,7 +64,7 @@
         return {
             usd: 5,
             sc: 500,
-            rate: 1000, // 1 USD = 100 SC
+            rate: 100, // 1 USD = 100 SC
             init() {
                 this.syncFromUSD();
             },
@@ -65,7 +72,7 @@
                 this.sc = Math.round(this.usd * this.rate);
             },
             syncFromSC() {
-                this.usd = (this.sc / this.rate);
+                this.usd = (this.sc / this.rate).toFixed(2);
             }
         }
     }
