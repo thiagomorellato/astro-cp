@@ -27,9 +27,18 @@ class PayPalController extends Controller
                 ],
             ]);
 
-        $order = $response->json();
+        if ($response->failed()) {
+            return redirect('/account')->with('error', 'Failed to create PayPal order. ' . $response->body());
+        }
 
-        return redirect(collect($order['links'])->firstWhere('rel', 'approve')['href']);
+        $order = $response->json();
+        $approveLink = collect($order['links'] ?? [])->firstWhere('rel', 'approve');
+
+        if (!$approveLink || !isset($approveLink['href'])) {
+            return redirect('/account')->with('error', 'No approval link returned from PayPal.');
+        }
+
+        return redirect($approveLink['href']);
     }
 
     public function captureOrder(Request $request)
@@ -45,7 +54,7 @@ class PayPalController extends Controller
             ->post(config('services.paypal.base_url') . "/v2/checkout/orders/{$orderId}/capture");
 
         if ($response->failed()) {
-            return redirect('/account')->with('error', 'Failed to capture PayPal order.');
+            return redirect('/account')->with('error', 'Failed to capture PayPal order. ' . $response->body());
         }
 
         $orderData = $response->json();
@@ -107,6 +116,10 @@ class PayPalController extends Controller
             'grant_type' => 'client_credentials',
         ]);
 
-        return $response->json()['access_token'];
+        if ($response->failed()) {
+            abort(500, 'Failed to authenticate with PayPal: ' . $response->body());
+        }
+
+        return $response->json()['access_token'] ?? null;
     }
 }

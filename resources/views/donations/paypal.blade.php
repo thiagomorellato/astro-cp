@@ -12,7 +12,7 @@
     </h2>
 
     <p class="text-sm text-center text-gray-300 mb-6">
-        <span class="italic text-xs text-yellow-300">1 USD = 100 SC</span>
+        <span class="italic text-xs text-yellow-300">1 USD = 1000 SC</span>
     </p>
 
     <form action="{{ route('paypal.buy') }}" method="GET" class="space-y-6">
@@ -64,7 +64,7 @@
         return {
             usd: 5,
             sc: 500,
-            rate: 100, // 1 USD = 100 SC
+            rate: 1000, // 1 USD = 100 SC
             init() {
                 this.syncFromUSD();
             },
