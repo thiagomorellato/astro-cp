@@ -11,7 +11,9 @@ class PayPalController extends Controller
     public function createOrder(Request $request)
     {
         $accessToken = $this->getAccessToken();
+
         $value = number_format((float) $request->input('amount', 5.00), 2, '.', '');
+
         $response = Http::withToken($accessToken)
             ->post(config('services.paypal.base_url') . '/v2/checkout/orders', [
                 'intent' => 'CAPTURE',
@@ -47,35 +49,41 @@ class PayPalController extends Controller
 
         $orderId = $request->query('token');
         if (!$orderId) {
-            return redirect('/account')->with('error', 'Invalid PayPal token.');
+            return redirect()->route('paypal.failed')->with('error', 'Invalid PayPal token.');
         }
 
         $response = Http::withToken($accessToken)
-            ->withBody('', 'application/json') // Especifica que o corpo está vazio
+            ->withBody('', 'application/json')
             ->post(config('services.paypal.base_url') . "/v2/checkout/orders/{$orderId}/capture");
 
         if ($response->failed()) {
-            return redirect('/account')->with('error', 'Failed to capture PayPal order. ' . $response->body());
+            return redirect()->route('paypal.failed')->with('error', 'Failed to capture PayPal order. ' . $response->body());
         }
 
         $orderData = $response->json();
 
-        $amount = (float) ($orderData['purchase_units'][0]['payments']['captures'][0]['amount']['value'] ?? 0);
+        $capture = $orderData['purchase_units'][0]['payments']['captures'][0] ?? null;
+
+        if (!$capture || $capture['status'] !== 'COMPLETED') {
+            return redirect()->route('paypal.failed')->with('error', 'Payment not completed. Status: ' . ($capture['status'] ?? 'unknown'));
+        }
+
+        $amount = (float) ($capture['amount']['value'] ?? 0);
 
         if ($amount <= 0) {
-            return redirect('/account')->with('error', 'Invalid payment amount.');
+            return redirect()->route('paypal.failed')->with('error', 'Invalid payment amount.');
         }
 
         $credits = intval($amount * config('services.paypal.conversion_rate', 20));
 
         $user = session('astrocp_user');
         if (!$user) {
-            return redirect('/account')->with('error', 'User session not found.');
+            return redirect()->route('paypal.failed')->with('error', 'User session not found.');
         }
 
         $login = DB::connection('ragnarok')->table('login')->where('userid', $user['userid'])->first();
         if (!$login) {
-            return redirect('/account')->with('error', 'User not found in login table.');
+            return redirect()->route('paypal.failed')->with('error', 'User not found in login table.');
         }
 
         $accountId = $login->account_id;
@@ -100,12 +108,18 @@ class PayPalController extends Controller
             ]);
         }
 
-        return redirect('/account')->with('success', "Purchase successful! You received {$credits} Star Credits.");
+        return view('donations.payment_successful', ['credits' => $credits]);
     }
 
     public function cancel()
     {
-        return redirect('/account')->with('error', 'Purchase canceled.');
+        return view('donations.payment_failed', ['message' => 'Purchase canceled.']);
+    }
+
+    public function failed(Request $request)
+    {
+        $error = session('error') ?? 'Payment failed or was declined.';
+        return view('donations.payment_failed', ['message' => $error]);
     }
 
     private function getAccessToken()

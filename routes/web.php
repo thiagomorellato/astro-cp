@@ -46,9 +46,11 @@ Route::post('/astrocp/logout', function () {
 // Página da doação PayPal
 Route::view('/donations/paypal', 'donations.paypal')->name('donations.paypal');
 
-// Grupo de rotas PayPal
+use App\Http\Controllers\PayPalController;
+
 Route::prefix('paypal')->name('paypal.')->group(function () {
     Route::get('/buy', [PayPalController::class, 'createOrder'])->name('buy');
     Route::get('/success', [PayPalController::class, 'captureOrder'])->name('success');
     Route::get('/cancel', [PayPalController::class, 'cancel'])->name('cancel');
+    Route::get('/failed', [PayPalController::class, 'failed'])->name('failed');
 });
