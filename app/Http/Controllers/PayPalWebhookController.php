@@ -118,34 +118,47 @@ class PayPalWebhookController extends Controller
      * Valida o webhook com a API do PayPal.
      */
     private function validateWebhook(array $headers, string $body): bool
-    {
-        $accessToken = $this->getAccessToken();
+{
+    $accessToken = $this->getAccessToken();
 
-        if (!$accessToken) {
-            Log::error('Failed to get PayPal access token for webhook validation.');
-            return false;
-        }
-
-        $response = Http::withToken($accessToken)->post(
-            config('services.paypal.base_url') . '/v1/notifications/verify-webhook-signature',
-            [
-                'auth_algo' => $headers['paypal-auth-algo'],
-                'cert_url' => $headers['paypal-cert-url'],
-                'transmission_id' => $headers['paypal-transmission-id'],
-                'transmission_sig' => $headers['paypal-transmission-sig'],
-                'transmission_time' => $headers['paypal-transmission-time'],
-                'webhook_id' => $headers['webhook-id'],
-                'webhook_event' => json_decode($body, true),
-            ]
-        );
-
-        if ($response->successful()) {
-            return $response->json()['verification_status'] === 'SUCCESS';
-        }
-
-        Log::error('Webhook signature verification failed: ' . $response->body());
+    if (!$accessToken) {
+        Log::error('Failed to get PayPal access token for webhook validation.');
         return false;
     }
+
+    $payload = [
+        'auth_algo' => $headers['paypal-auth-algo'],
+        'cert_url' => $headers['paypal-cert-url'],
+        'transmission_id' => $headers['paypal-transmission-id'],
+        'transmission_sig' => $headers['paypal-transmission-sig'],
+        'transmission_time' => $headers['paypal-transmission-time'],
+        'webhook_id' => $headers['webhook-id'],
+        'webhook_event' => json_decode($body, true),
+    ];
+
+    Log::debug('Sending webhook validation payload to PayPal:', $payload);
+
+    $response = Http::withToken($accessToken)->post(
+        config('services.paypal.base_url') . '/v1/notifications/verify-webhook-signature',
+        $payload
+    );
+
+    Log::debug('PayPal validation response', [
+        'status' => $response->status(),
+        'body' => $response->body(),
+    ]);
+
+    if ($response->successful()) {
+        return $response->json()['verification_status'] === 'SUCCESS';
+    }
+
+    Log::error('Webhook signature verification failed:', [
+        'status' => $response->status(),
+        'body' => $response->body(),
+    ]);
+
+    return false;
+}
 
     /**
      * Obtém o token OAuth do PayPal.
