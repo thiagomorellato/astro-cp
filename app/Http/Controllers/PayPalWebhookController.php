@@ -152,10 +152,7 @@ class PayPalWebhookController extends Controller
         return $response->json()['verification_status'] === 'SUCCESS';
     }
 
-    Log::error('Webhook signature verification failed:', [
-        'status' => $response->status(),
-        'body' => $response->body(),
-    ]);
+    error_log('Webhook verification failed: ' . $response->body());
 
     return false;
 }
