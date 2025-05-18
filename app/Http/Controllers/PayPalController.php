@@ -7,9 +7,6 @@ use Illuminate\Support\Facades\Http;
 
 class PayPalController extends Controller
 {
-    use Illuminate\Support\Facades\DB;
-    use Illuminate\Support\Facades\Http;
-    use Illuminate\Http\Request;
     
     public function createOrder(Request $request)
     {
