@@ -9,14 +9,9 @@ use Illuminate\Support\Facades\Log;
 
 class PayPalWebhookController extends Controller
 {
-    /**
-     * Recebe o webhook do PayPal e processa o evento.
-     */
     public function handle(Request $request)
     {
-        $body = $request->getContent(); // Corpo cru necessário para verificação
-
-        // Decodifica JSON para log e processamento
+        $body = $request->getContent();
         $payload = json_decode($body, true);
 
         $headers = [
@@ -41,8 +36,24 @@ class PayPalWebhookController extends Controller
         $eventType = $payload['event_type'] ?? null;
 
         if ($eventType === 'PAYMENT.CAPTURE.COMPLETED') {
-            $resource = $payload['resource'] ?? [];
+            $eventId = $payload['id'] ?? null;
 
+            if (!$eventId) {
+                Log::warning('Missing PayPal event ID.');
+                return response()->json(['error' => 'Missing event ID'], 400);
+            }
+
+            // Verificação contra replay
+            $alreadyProcessed = DB::connection('ragnarok')->table('donations_pp')
+                ->where('paypal_event_id', $eventId)
+                ->exists();
+
+            if ($alreadyProcessed) {
+                Log::info("Webhook event {$eventId} already processed.");
+                return response()->json(['message' => 'Event already processed'], 200);
+            }
+
+            $resource = $payload['resource'] ?? [];
             $paypalOrderId = $resource['supplementary_data']['related_ids']['order_id'] ?? null;
             $amount = $resource['amount']['value'] ?? null;
             $currency = $resource['amount']['currency_code'] ?? null;
@@ -101,6 +112,7 @@ class PayPalWebhookController extends Controller
                     'amount_usd' => $amount,
                     'credits' => $credits,
                     'status' => 'success',
+                    'paypal_event_id' => $eventId,
                     'updated_at' => now(),
                 ]);
 
@@ -112,9 +124,6 @@ class PayPalWebhookController extends Controller
         return response()->json(['message' => 'Event ignored'], 200);
     }
 
-    /**
-     * Valida o webhook com a API do PayPal.
-     */
     private function validateWebhook(array $headers, string $body): bool
     {
         $accessToken = $this->getAccessToken();
@@ -134,23 +143,14 @@ class PayPalWebhookController extends Controller
             'webhook_event' => json_decode($body, true),
         ];
 
-
         $response = Http::withToken($accessToken)->post(
             config('services.paypal.base_url') . '/v1/notifications/verify-webhook-signature',
             $verificationPayload
         );
 
-        if ($response->successful()) {
-            return $response->json()['verification_status'] === 'SUCCESS';
-        }
-
-
-        return false;
+        return $response->successful() && $response->json()['verification_status'] === 'SUCCESS';
     }
 
-    /**
-     * Obtém o token OAuth do PayPal.
-     */
     private function getAccessToken()
     {
         $response = Http::asForm()->withBasicAuth(
