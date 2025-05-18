@@ -19,8 +19,6 @@ class PayPalWebhookController extends Controller
         // Decodifica JSON para log e processamento
         $payload = json_decode($body, true);
 
-        Log::info('Received PayPal webhook:', ['payload' => $payload]);
-
         $headers = [
             'paypal-transmission-id' => $request->header('PayPal-Transmission-Id'),
             'paypal-transmission-time' => $request->header('PayPal-Transmission-Time'),
@@ -136,26 +134,16 @@ class PayPalWebhookController extends Controller
             'webhook_event' => json_decode($body, true),
         ];
 
-        Log::info('Sending verification payload to PayPal:', $verificationPayload);
 
         $response = Http::withToken($accessToken)->post(
             config('services.paypal.base_url') . '/v1/notifications/verify-webhook-signature',
             $verificationPayload
         );
 
-        Log::info('PayPal webhook verification response:', [
-            'status' => $response->status(),
-            'body' => $response->body(),
-        ]);
-
         if ($response->successful()) {
             return $response->json()['verification_status'] === 'SUCCESS';
         }
 
-        Log::error('Webhook signature verification failed.', [
-            'status' => $response->status(),
-            'body' => $response->body(),
-        ]);
 
         return false;
     }

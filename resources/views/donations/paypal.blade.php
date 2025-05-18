@@ -4,6 +4,10 @@
 <div 
     x-data="donationForm()"
     x-init="init()"
+    x-show="show"
+    x-transition:enter="transition ease-out duration-700"
+    x-transition:enter-start="opacity-0 translate-y-4"
+    x-transition:enter-end="opacity-100 translate-y-0"
     x-cloak
     class="bg-white/10 backdrop-blur-md text-white p-6 rounded-xl max-w-md mx-auto shadow-lg border border-white/20 mt-10"
 >
@@ -15,7 +19,7 @@
         <span class="italic text-xs text-yellow-300">1 USD = 1000 SC</span>
     </p>
 
-    <form action="{{ route('paypal.buy') }}" method="GET" class="space-y-6">
+    <form action="{{ route('paypal.buy') }}" method="GET" class="space-y-6" @submit="handleLoading">
         <div class="flex items-center gap-2">
             <!-- USD input -->
             <div class="w-1/2">
@@ -52,9 +56,17 @@
 
         <button 
             type="submit"
-            class="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-2 rounded shadow transition"
+            id="donate-btn"
+            class="w-full bg-gray-500 hover:bg-yellow-600 text-white font-semibold py-2 rounded shadow transition flex items-center justify-center gap-2"
         >
-            Donate with PayPal
+            <svg id="donate-spinner" class="hidden animate-spin h-5 w-5 text-white"
+                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10"
+                        stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <span id="donate-text">Donate with PayPal</span>
         </button>
     </form>
 </div>
@@ -64,8 +76,10 @@
         return {
             usd: 5,
             sc: 5000,
-            rate: 1000, // 1 USD = 1000 SC
+            rate: 1000,
+            show: false,
             init() {
+                this.show = true;
                 this.syncFromUSD();
             },
             syncFromUSD() {
@@ -73,6 +87,15 @@
             },
             syncFromSC() {
                 this.usd = parseFloat((this.sc / this.rate).toFixed(2));
+            },
+            handleLoading(event) {
+                const btn = document.getElementById('donate-btn');
+                const spinner = document.getElementById('donate-spinner');
+                const text = document.getElementById('donate-text');
+
+                btn.disabled = true;
+                spinner.classList.remove('hidden');
+                text.textContent = 'Redirecting...';
             }
         }
     }

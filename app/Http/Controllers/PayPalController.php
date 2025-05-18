@@ -8,31 +8,29 @@ use Illuminate\Http\Request;
 
 class PayPalController extends Controller
 {
-
-    
     public function createOrder(Request $request)
     {
         $accessToken = $this->getAccessToken();
         $value = number_format((float) $request->input('amount', 5.00), 2, '.', '');
-    
-        // 🔐 Verifica se o usuário está logado
+
+        // 🔐 Check if user is logged in
         $userid = session('astrocp_user.userid');
         if (!$userid) {
             return redirect('/donations/payment-cancelled')
                 ->with('error', 'User session expired. Please log in again.');
         }
-    
-        // 🔍 Busca o account_id correspondente ao userid
+
+        // 🔍 Retrieve account_id from user
         $user = DB::connection('ragnarok')->table('login')->where('userid', $userid)->first();
-    
+
         if (!$user || !isset($user->account_id)) {
             return redirect('/donations/payment-cancelled')
                 ->with('error', 'Unable to find account information.');
         }
-    
+
         $accountId = $user->account_id;
-    
-        // 📡 Cria a ordem no PayPal
+
+        // 📡 Create order on PayPal
         $response = Http::withToken($accessToken)
             ->post(config('services.paypal.base_url') . '/v2/checkout/orders', [
                 'intent' => 'CAPTURE',
@@ -47,21 +45,21 @@ class PayPalController extends Controller
                     'cancel_url' => route('paypal.cancel'),
                 ],
             ]);
-    
+
         if ($response->failed()) {
             return redirect('/donations/payment-cancelled')
                 ->with('error', 'Failed to create PayPal order. ' . $response->body());
         }
-    
+
         $order = $response->json();
         $paypalOrderId = $order['id'] ?? null;
-    
+
         if (!$paypalOrderId) {
             return redirect('/donations/payment-cancelled')
                 ->with('error', 'Invalid PayPal order ID.');
         }
-    
-        // 💾 Salva no banco como pending
+
+        // 💾 Save donation as "pending"
         DB::connection('ragnarok')->table('donations_pp')->insert([
             'account_id' => $accountId,
             'paypal_order_id' => $paypalOrderId,
@@ -70,17 +68,17 @@ class PayPalController extends Controller
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-    
+
+        // 🔗 Get approval URL
         $approveLink = collect($order['links'] ?? [])->firstWhere('rel', 'approve');
-    
+
         if (!$approveLink || !isset($approveLink['href'])) {
             return redirect('/donations/payment-cancelled')
                 ->with('error', 'No approval link returned from PayPal.');
         }
-    
+
         return redirect($approveLink['href']);
     }
-    
 
     public function captureOrder(Request $request)
     {
@@ -101,16 +99,35 @@ class PayPalController extends Controller
                 ->with('error', 'Failed to capture PayPal order. ' . $response->body());
         }
 
-        // Só redireciona o usuário dizendo que o pagamento foi capturado.
+        // 🔎 Find donation by order ID
+        $donation = DB::connection('ragnarok')->table('donations_pp')
+            ->where('paypal_order_id', $orderId)
+            ->first();
+
+        if (!$donation) {
+            return redirect('/donations/payment-cancelled')
+                ->with('error', 'Donation record not found.');
+        }
+
+        // 💰 Calculate SC
+        $rate = 1000; // 1 USD = 1000 SC
+        $credits = (int) ($donation->amount_usd * $rate);
+
+        // ✅ Update donation status
+        DB::connection('ragnarok')->table('donations_pp')
+            ->where('paypal_order_id', $orderId)
+            ->update([
+                'status' => 'captured',
+                'updated_at' => now(),
+            ]);
+
+        // 📤 Flash SC amount to session
         return redirect('/donations/payment-successful')
-            ->with('success', 'Payment captured. Your credits will be updated shortly.');
+            ->with('credits', $credits);
     }
 
     public function cancel(Request $request)
     {
-        $paypalOrderId = $request->query('token') ?? null;
-
-        // Aqui você pode registrar a doação cancelada, se quiser, ou deixar só redirecionar.
         return redirect('/donations/payment-failed')
             ->with('error', 'Purchase canceled.');
     }
