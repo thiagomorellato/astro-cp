@@ -9,7 +9,7 @@
     x-transition:enter-start="opacity-0 translate-y-4"
     x-transition:enter-end="opacity-100 translate-y-0"
     x-cloak
-    class="bg-white/10 backdrop-blur-md text-white p-6 rounded-xl max-w-md mx-auto shadow-lg border border-white/20 mt-10"
+    class="bg-white/10 backdrop-blur-md text-white p-6 rounded-xl max-w-sm mx-auto shadow-lg border border-white/20"
 >
     <h2 class="text-2xl font-semibold text-center mb-4 text-yellow-500 font-['Cinzel'] drop-shadow">
         Donate via PayPal
@@ -30,7 +30,7 @@
                     step="0.01" 
                     x-model="usd" 
                     @input="syncFromUSD" 
-                    class="w-full px-4 py-2 rounded bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 shadow-sm"
                 >
             </div>
 
@@ -46,7 +46,7 @@
                     step="100" 
                     x-model="sc" 
                     @input="syncFromSC" 
-                    class="w-full px-4 py-2 rounded bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 shadow-sm"
                 >
             </div>
         </div>
@@ -57,7 +57,7 @@
         <button 
             type="submit"
             id="donate-btn"
-            class="w-full bg-gray-500 hover:bg-yellow-600 text-white font-semibold py-2 rounded shadow transition flex items-center justify-center gap-2"
+            class="w-full bg-gray-500 hover:bg-yellow-600 text-white font-semibold py-2 px-6 rounded-lg shadow transition flex items-center justify-center gap-2"
         >
             <svg id="donate-spinner" class="hidden animate-spin h-5 w-5 text-white"
                  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
