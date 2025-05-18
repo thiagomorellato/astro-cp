@@ -2,8 +2,8 @@
 
 @section('content')
 <div 
-    x-data="{ show: false }"
-    x-init="setTimeout(() => show = true, 100)"
+    x-data="donationForm()"
+    x-init="init()"
     x-show="show"
     x-transition:enter="transition ease-out duration-700"
     x-transition:enter-start="opacity-0 translate-y-4"
