@@ -6,6 +6,9 @@
   <title>Astro-CP</title>
   @vite('resources/css/app.css')
 
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-d+M7jMgjhHZMbbfZTtkGQm0fPfFGrckZ8+7+aPdlNHOeQGdCyZIQ41zylVo3GEz0wl0R0f2klm+Q67GlPiTHIQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap" rel="stylesheet" />
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>

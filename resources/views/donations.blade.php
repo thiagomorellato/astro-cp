@@ -22,7 +22,7 @@
     <div class="flex flex-col justify-center mb-2 space-y-4 max-w-xs mx-auto">
         <!-- PayPal Button -->
         <button onclick="handleDonateLoading(event)" id="donate-btn"
-            class="bg-gray-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition w-full flex items-center justify-center gap-2">
+            class="cursor-pointer bg-gray-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition w-full flex items-center justify-center gap-2">
             <svg id="donate-spinner" class="hidden animate-spin h-5 w-5 text-white"
                  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10"
@@ -30,7 +30,9 @@
                 <path class="opacity-75" fill="currentColor"
                       d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
             </svg>
-            <span id="donate-text">Donate via PayPal</span>
+            <span id="donate-text" class="flex items-center gap-2">
+                <i class="fab fa-paypal text-white text-lg"></i> Donate via PayPal
+            </span>
         </button>
 
         <!-- PIX (sem loading por enquanto) -->
