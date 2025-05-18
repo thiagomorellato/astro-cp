@@ -14,36 +14,34 @@ class PayPalWebhookController extends Controller
      */
     public function handle(Request $request)
     {
-        // Loga o payload para debugging
-        Log::info('Received PayPal webhook:', $request->all());
+        // Loga o payload completo
+        Log::info('Received PayPal webhook:', ['payload' => $request->all()]);
 
         $headers = [
-            'paypal-transmission-id' => $request->header('Paypal-Transmission-Id'),
-            'paypal-transmission-time' => $request->header('Paypal-Transmission-Time'),
-            'paypal-cert-url' => $request->header('Paypal-Cert-Url'),
-            'paypal-auth-algo' => $request->header('Paypal-Auth-Algo'),
-            'paypal-transmission-sig' => $request->header('Paypal-Transmission-Sig'),
-            'webhook-id' => config('services.paypal.webhook_id'), // Configure no .env e services.php
+            'paypal-transmission-id' => $request->header('paypal-transmission-id'),
+            'paypal-transmission-time' => $request->header('paypal-transmission-time'),
+            'paypal-cert-url' => $request->header('paypal-cert-url'),
+            'paypal-auth-algo' => $request->header('paypal-auth-algo'),
+            'paypal-transmission-sig' => $request->header('paypal-transmission-sig'),
+            'webhook-id' => config('services.paypal.webhook_id'),
         ];
 
         $body = $request->getContent();
 
-        // Validar webhook com a API do PayPal para garantir que é legítimo
         if (!$this->validateWebhook($headers, $body)) {
-            Log::warning('Invalid PayPal webhook signature');
+            Log::warning('Invalid PayPal webhook signature.');
             return response()->json(['error' => 'Invalid signature'], 400);
         }
 
         $payload = json_decode($body, true);
 
         if (!$payload) {
-            Log::warning('Empty or invalid PayPal webhook payload');
+            Log::warning('Invalid JSON payload from PayPal.');
             return response()->json(['error' => 'Invalid payload'], 400);
         }
 
         $eventType = $payload['event_type'] ?? null;
 
-        // Trate apenas eventos de pagamento concluído
         if ($eventType === 'PAYMENT.CAPTURE.COMPLETED') {
             $resource = $payload['resource'] ?? [];
 
@@ -52,31 +50,33 @@ class PayPalWebhookController extends Controller
             $currency = $resource['amount']['currency_code'] ?? null;
 
             if (!$paypalOrderId || !$amount || !$currency) {
-                Log::warning('Incomplete payment data in PayPal webhook');
+                Log::warning('Missing order_id, amount or currency in webhook.');
                 return response()->json(['error' => 'Incomplete payment data'], 400);
             }
 
-            // Buscar doação pendente com esse paypalOrderId
             $donation = DB::connection('ragnarok')->table('donations_pp')
                 ->where('paypal_order_id', $paypalOrderId)
                 ->first();
 
             if (!$donation) {
-                Log::warning("Donation record not found for PayPal Order ID: {$paypalOrderId}");
+                Log::warning("Donation not found. PayPal Order ID: {$paypalOrderId}");
                 return response()->json(['error' => 'Donation record not found'], 404);
             }
 
             if ($donation->status === 'success') {
-                // Já processado, evita duplicação
-                return response()->json(['message' => 'Donation already processed']);
+                return response()->json(['message' => 'Donation already processed'], 200);
             }
 
             $accountId = $donation->account_id;
 
-            // Calcular créditos baseado no valor recebido e taxa configurada
-            $credits = intval(floatval($amount) * config('services.paypal.conversion_rate', 1000));
+            if (!$accountId) {
+                Log::error("Invalid account ID for donation ID {$donation->id}");
+                return response()->json(['error' => 'Invalid account ID'], 400);
+            }
 
-            // Atualizar créditos na tabela acc_reg_num
+            $conversionRate = config('services.paypal.conversion_rate', 1000);
+            $credits = (int) floor(floatval($amount) * $conversionRate);
+
             $existing = DB::connection('ragnarok')->table('acc_reg_num')
                 ->where('account_id', $accountId)
                 ->where('key', '#CASHPOINTS')
@@ -97,7 +97,6 @@ class PayPalWebhookController extends Controller
                 ]);
             }
 
-            // Atualizar status da doação para sucesso
             DB::connection('ragnarok')->table('donations_pp')
                 ->where('id', $donation->id)
                 ->update([
@@ -107,33 +106,29 @@ class PayPalWebhookController extends Controller
                     'updated_at' => now(),
                 ]);
 
-            Log::info("PayPal donation processed: Order ID {$paypalOrderId}, Account ID {$accountId}, Credits {$credits}");
+            Log::info("Donation processed: PayPal Order {$paypalOrderId}, Account {$accountId}, USD {$amount}, Credits {$credits}");
 
             return response()->json(['message' => 'Payment processed successfully']);
         }
 
-        // Ignorar outros eventos, mas responder 200 OK para PayPal não reenviar
-        return response()->json(['message' => 'Event ignored']);
+        return response()->json(['message' => 'Event ignored'], 200);
     }
 
     /**
-     * Valida o webhook usando a API do PayPal.
-     *
-     * @param array $headers
-     * @param string $body
-     * @return bool
+     * Valida o webhook com a API do PayPal.
      */
     private function validateWebhook(array $headers, string $body): bool
     {
         $accessToken = $this->getAccessToken();
 
         if (!$accessToken) {
-            Log::error('No PayPal access token available for webhook validation');
+            Log::error('Failed to get PayPal access token for webhook validation.');
             return false;
         }
 
-        $response = Http::withToken($accessToken)
-            ->post(config('services.paypal.base_url') . '/v1/notifications/verify-webhook-signature', [
+        $response = Http::withToken($accessToken)->post(
+            config('services.paypal.base_url') . '/v1/notifications/verify-webhook-signature',
+            [
                 'auth_algo' => $headers['paypal-auth-algo'],
                 'cert_url' => $headers['paypal-cert-url'],
                 'transmission_id' => $headers['paypal-transmission-id'],
@@ -141,19 +136,19 @@ class PayPalWebhookController extends Controller
                 'transmission_time' => $headers['paypal-transmission-time'],
                 'webhook_id' => $headers['webhook-id'],
                 'webhook_event' => json_decode($body, true),
-            ]);
+            ]
+        );
 
         if ($response->successful()) {
             return $response->json()['verification_status'] === 'SUCCESS';
         }
 
-        Log::error('PayPal webhook validation failed: ' . $response->body());
-
+        Log::error('Webhook signature verification failed: ' . $response->body());
         return false;
     }
 
     /**
-     * Get PayPal OAuth2 Access Token
+     * Obtém o token OAuth do PayPal.
      */
     private function getAccessToken()
     {
@@ -165,7 +160,7 @@ class PayPalWebhookController extends Controller
         ]);
 
         if ($response->failed()) {
-            Log::error('Failed to authenticate with PayPal: ' . $response->body());
+            Log::error('PayPal authentication failed: ' . $response->body());
             return null;
         }
 
