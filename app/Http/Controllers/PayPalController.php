@@ -7,11 +7,33 @@ use Illuminate\Support\Facades\Http;
 
 class PayPalController extends Controller
 {
+    use Illuminate\Support\Facades\DB;
+    use Illuminate\Support\Facades\Http;
+    use Illuminate\Http\Request;
+    
     public function createOrder(Request $request)
     {
         $accessToken = $this->getAccessToken();
         $value = number_format((float) $request->input('amount', 5.00), 2, '.', '');
-
+    
+        // 🔐 Verifica se o usuário está logado
+        $userid = session('astrocp_user.userid');
+        if (!$userid) {
+            return redirect('/donations/payment-cancelled')
+                ->with('error', 'User session expired. Please log in again.');
+        }
+    
+        // 🔍 Busca o account_id correspondente ao userid
+        $user = DB::connection('ragnarok')->table('login')->where('userid', $userid)->first();
+    
+        if (!$user || !isset($user->account_id)) {
+            return redirect('/donations/payment-cancelled')
+                ->with('error', 'Unable to find account information.');
+        }
+    
+        $accountId = $user->account_id;
+    
+        // 📡 Cria a ordem no PayPal
         $response = Http::withToken($accessToken)
             ->post(config('services.paypal.base_url') . '/v2/checkout/orders', [
                 'intent' => 'CAPTURE',
@@ -26,22 +48,40 @@ class PayPalController extends Controller
                     'cancel_url' => route('paypal.cancel'),
                 ],
             ]);
-
+    
         if ($response->failed()) {
             return redirect('/donations/payment-cancelled')
                 ->with('error', 'Failed to create PayPal order. ' . $response->body());
         }
-
+    
         $order = $response->json();
+        $paypalOrderId = $order['id'] ?? null;
+    
+        if (!$paypalOrderId) {
+            return redirect('/donations/payment-cancelled')
+                ->with('error', 'Invalid PayPal order ID.');
+        }
+    
+        // 💾 Salva no banco como pending
+        DB::connection('ragnarok')->table('donations_pp')->insert([
+            'account_id' => $accountId,
+            'paypal_order_id' => $paypalOrderId,
+            'amount_usd' => $value,
+            'status' => 'pending',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    
         $approveLink = collect($order['links'] ?? [])->firstWhere('rel', 'approve');
-
+    
         if (!$approveLink || !isset($approveLink['href'])) {
             return redirect('/donations/payment-cancelled')
                 ->with('error', 'No approval link returned from PayPal.');
         }
-
+    
         return redirect($approveLink['href']);
     }
+    
 
     public function captureOrder(Request $request)
     {
