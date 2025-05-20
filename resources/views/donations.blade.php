@@ -101,7 +101,7 @@
                 }
 
                 if (method === 'pix') {
-                    window.location.href = "{{ route('/account') }}";
+                    window.location.href = "{{ route('account') }}";
                 }
             },
             redirectToLogin() {
