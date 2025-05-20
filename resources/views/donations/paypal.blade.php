@@ -27,7 +27,7 @@
                 <input 
                     type="number" 
                     min="1" 
-                    step="0.01" 
+                    step="0.10" 
                     x-model="usd" 
                     @input="syncFromUSD" 
                     class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 shadow-sm"
@@ -35,7 +35,7 @@
             </div>
 
             <!-- <=> Icon -->
-            <div class="text-yellow-400 text-xl align-middle font-bold select-none">⇄</div>
+            <div class="text-yellow-400 text-xl self-center font-bold select-none">⇄</div>
 
             <!-- SC input -->
             <div class="w-1/2">
