@@ -100,12 +100,12 @@
                     }, 500);
                 }
 
-                if (method === 'pix') {
-                    window.location.href = "{{ route('account') }}";
-                }
+                //if (method === 'pix') {
+                //    window.location.href = "{{ route('account') }}";
+                //}
             },
             redirectToLogin() {
-                window.location.href = "{{ route('account') }}"; // ou qualquer rota de login do seu sistema
+                window.location.href = "/account"; // ou qualquer rota de login do seu sistema
             }
         }
     }

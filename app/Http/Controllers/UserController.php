@@ -26,6 +26,9 @@ class UserController extends Controller
             return redirect()->route('login')->with('error', 'User not found.');
         }
 
+        // Verifica se o usuário é VIP
+        $isVip = $userData->vip_time != 0;
+
         // Busca personagens pelo account_id
         $characters = DB::connection('ragnarok')
             ->table('char')
@@ -37,6 +40,7 @@ class UserController extends Controller
             'userData' => $userData,
             'characters' => $characters,
             'username' => $userid,
+            'isVip' => $isVip,
         ]);
     }
 
