@@ -2,12 +2,8 @@
 
 @section('content')
 <div 
-    x-data="{ show: false }"
-    x-init="setTimeout(() => show = true, 100)"
-    x-show="show"
-    x-transition:enter="transition ease-out duration-700"
-    x-transition:enter-start="opacity-0 translate-y-4"
-    x-transition:enter-end="opacity-100 translate-y-0"
+    x-data="donationPage()"
+    x-init="init()"
     x-cloak
     class="bg-white/10 backdrop-blur-md text-white p-6 rounded-xl max-w-sm mx-auto shadow-lg border border-white/20"
 >
@@ -21,7 +17,7 @@
 
     <div class="flex flex-col justify-center mb-2 space-y-4 max-w-xs mx-auto">
         <!-- PayPal Button -->
-        <button onclick="handleDonateLoading(event)" id="donate-btn"
+        <button @click="attemptDonate('paypal')"
             class="cursor-pointer bg-gray-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition w-full flex items-center justify-center gap-2">
             <svg id="donate-spinner" class="hidden animate-spin h-5 w-5 text-white"
                  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -36,7 +32,8 @@
         </button>
 
         <!-- PIX Button -->
-        <button onclick="handlePixRedirect(event)" class="bg-gray-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition w-full text-center">
+        <button @click="attemptDonate('pix')" 
+            class="bg-gray-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition w-full text-center">
             Donate via PIX
         </button>
     </div>
@@ -44,39 +41,72 @@
     <p class="text-center text-xs text-gray-300 italic mb-4">
         1 USD = 1000 SP
     </p>
+
+    <!-- Modal for login required -->
+    <div 
+        x-show="showLoginModal"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-90"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-90"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+    >
+        <div class="bg-white/10 backdrop-blur p-6 rounded-xl shadow-lg border border-white/20 max-w-sm w-full mx-4 text-white">
+            <h3 class="text-xl font-semibold text-yellow-400 mb-4 text-center">Login Required</h3>
+            <p class="text-sm text-gray-300 text-center mb-6">
+                You must be logged in to make a donation.
+            </p>
+            <div class="flex justify-center gap-4">
+                <button @click="redirectToLogin"
+                    class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-semibold shadow">
+                    Go to Login
+                </button>
+                <button @click="showLoginModal = false"
+                    class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-semibold shadow">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- JS: Login status -->
 <script>
-    const isLoggedIn = @json(session()->has('astrocp_user'));
+    function donationPage() {
+        return {
+            isLoggedIn: @json(session()->has('astrocp_user')),
+            showLoginModal: false,
+            init() {
+                // Optional: intro animation or preload logic
+            },
+            attemptDonate(method) {
+                if (!this.isLoggedIn) {
+                    this.showLoginModal = true;
+                    return;
+                }
 
-    function handleDonateLoading(event) {
-        event.preventDefault();
+                if (method === 'paypal') {
+                    const btn = document.getElementById('donate-btn');
+                    const spinner = document.getElementById('donate-spinner');
+                    const text = document.getElementById('donate-text');
 
-        if (!isLoggedIn) {
-            alert('You must be logged in to donate.');
-            return;
-        }
+                    btn.disabled = true;
+                    spinner.classList.remove('hidden');
+                    text.textContent = 'Redirecting...';
 
-        const btn = document.getElementById('donate-btn');
-        const spinner = document.getElementById('donate-spinner');
-        const text = document.getElementById('donate-text');
+                    setTimeout(() => {
+                        window.location.href = "{{ route('donations.paypal') }}";
+                    }, 500);
+                }
 
-        btn.disabled = true;
-        spinner.classList.remove('hidden');
-        text.textContent = 'Redirecting...';
-
-        setTimeout(() => {
-            window.location.href = "{{ route('donations.paypal') }}";
-        }, 500);
-    }
-
-    function handlePixRedirect(event) {
-        event.preventDefault();
-
-        if (!isLoggedIn) {
-            alert('You must be logged in to donate.');
-            return;
+                if (method === 'pix') {
+                    window.location.href = "{{ route('/') }}";
+                }
+            },
+            redirectToLogin() {
+                window.location.href = "{{ route('account') }}"; // ou qualquer rota de login do seu sistema
+            }
         }
     }
 </script>
