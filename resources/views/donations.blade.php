@@ -35,10 +35,10 @@
             </span>
         </button>
 
-        <!-- PIX (sem loading por enquanto) -->
-        <a href="#" class="bg-gray-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition w-full text-center">
+        <!-- PIX Button -->
+        <button onclick="handlePixRedirect(event)" class="bg-gray-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition w-full text-center">
             Donate via PIX
-        </a>
+        </button>
     </div>
 
     <p class="text-center text-xs text-gray-300 italic mb-4">
@@ -46,9 +46,18 @@
     </p>
 </div>
 
-<!-- JS: Loading PayPal -->
+<!-- JS: Login status -->
 <script>
+    const isLoggedIn = @json(session()->has('astrocp_user'));
+
     function handleDonateLoading(event) {
+        event.preventDefault();
+
+        if (!isLoggedIn) {
+            alert('Você precisa estar logado para fazer isso');
+            return;
+        }
+
         const btn = document.getElementById('donate-btn');
         const spinner = document.getElementById('donate-spinner');
         const text = document.getElementById('donate-text');
@@ -57,10 +66,21 @@
         spinner.classList.remove('hidden');
         text.textContent = 'Redirecting...';
 
-        // Simula carregamento antes de redirecionar
         setTimeout(() => {
             window.location.href = "{{ route('donations.paypal') }}";
         }, 500);
+    }
+
+    function handlePixRedirect(event) {
+        event.preventDefault();
+
+        if (!isLoggedIn) {
+            alert('Você precisa estar logado para fazer isso');
+            return;
+        }
+
+        // Substitua '#' pela rota correta de doação via PIX quando implementar
+        window.location.href = "{{ route('donations.pix') }}";
     }
 </script>
 @endsection

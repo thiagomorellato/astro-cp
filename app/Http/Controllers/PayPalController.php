@@ -10,15 +10,15 @@ class PayPalController extends Controller
 {
     public function createOrder(Request $request)
     {
-        $accessToken = $this->getAccessToken();
-        $value = number_format((float) $request->input('amount', 5.00), 2, '.', '');
-
         // 🔐 Check if user is logged in
         $userid = session('astrocp_user.userid');
         if (!$userid) {
             return redirect('/donations/payment-cancelled')
                 ->with('error', 'User session expired. Please log in again.');
         }
+
+        $accessToken = $this->getAccessToken();
+        $value = number_format((float) $request->input('amount', 5.00), 2, '.', '');
 
         // 🔍 Retrieve account_id from user
         $user = DB::connection('ragnarok')->table('login')->where('userid', $userid)->first();
