@@ -1,0 +1,120 @@
+@extends('layouts.app')
+
+@section('content')
+{{-- Feedback messages --}}
+@if(session('success'))
+    <div 
+        x-data="{ show: true }" 
+        x-show="show"
+        x-transition:enter="transition ease-out duration-500"
+        x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-init="setTimeout(() => show = false, 4000)"
+        class="bg-green-600/90 text-white px-4 py-3 rounded-xl max-w-md mx-auto mb-4 shadow-lg border border-green-300/40 backdrop-blur"
+    >
+        <p class="text-sm font-semibold text-center">{{ session('success') }}</p>
+    </div>
+@endif
+
+@if(session('error'))
+    <div 
+        x-data="{ show: true }" 
+        x-show="show"
+        x-transition:enter="transition ease-out duration-500"
+        x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-init="setTimeout(() => show = false, 4000)"
+        class="bg-red-600/90 text-white px-4 py-3 rounded-xl max-w-md mx-auto mb-4 shadow-lg border border-red-300/40 backdrop-blur"
+    >
+        <p class="text-sm font-semibold text-center">{{ session('error') }}</p>
+    </div>
+@endif
+
+<div 
+    x-data="{ tab: 'account', confirmDelete: false, selectedChar: null }"
+    class="bg-white/10 backdrop-blur-md text-white p-6 rounded-xl max-w-2xl mx-auto shadow-lg border border-white/20"
+>
+    <div class="flex space-x-4 justify-center mb-6">
+        <button @click="tab = 'account'" :class="tab === 'account' ? 'text-yellow-400 underline' : 'text-gray-300'" class="text-lg font-semibold">
+            Account
+        </button>
+        <button @click="tab = 'chars'" :class="tab === 'chars' ? 'text-yellow-400 underline' : 'text-gray-300'" class="text-lg font-semibold">
+            Chars
+        </button>
+    </div>
+
+    {{-- Account Tab --}}
+    <div x-show="tab === 'account'" x-transition>
+        <div class="space-y-4 text-sm">
+            <div class="flex justify-between">
+                <span class="text-gray-300 font-semibold">Account Name:</span>
+                <span>{{ session('astrocp_user.username') }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-300 font-semibold">VIP Status:</span>
+                <span>
+                    @if($isVip)
+                        <span class="text-green-400 font-bold">Active</span>
+                    @else
+                        <span class="text-red-400 font-bold">Inactive</span>
+                    @endif
+                </span>
+            </div>
+
+            <div class="pt-4">
+                <a href="{{ route('vip.subscribe') }}" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg shadow transition">
+                    Subscribe to VIP
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {{-- Chars Tab --}}
+    <div x-show="tab === 'chars'" x-transition>
+        <div class="space-y-3">
+            @forelse($characters as $char)
+                <div class="bg-gray-800/70 px-4 py-3 rounded-lg flex justify-between items-center border border-gray-600">
+                    <span>{{ $char->name }}</span>
+                    <button 
+                        @click="selectedChar = '{{ $char->name }}'; confirmDelete = true;"
+                        class="text-red-400 hover:text-red-600 font-bold text-sm"
+                    >
+                        ✖
+                    </button>
+                </div>
+            @empty
+                <p class="text-center text-gray-400 italic">No characters found.</p>
+            @endforelse
+        </div>
+    </div>
+
+    {{-- Delete Confirmation Modal --}}
+    <div 
+        x-show="confirmDelete"
+        x-transition
+        class="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+        x-cloak
+    >
+        <div class="bg-gray-900 text-white rounded-xl p-6 w-full max-w-sm border border-white/20 shadow-xl space-y-4">
+            <h3 class="text-lg font-bold text-yellow-500">Confirm Deletion</h3>
+            <p class="text-sm text-gray-300">
+                Are you sure you want to delete <span class="font-semibold text-white" x-text="selectedChar"></span>?
+            </p>
+            <p class="text-xs text-red-400">This action cannot be undone.</p>
+
+            <form method="POST" action="{{ route('char.delete') }}" class="space-y-4">
+                @csrf
+                <input type="hidden" name="char_name" :value="selectedChar">
+                <div>
+                    <label class="text-sm block text-gray-300 mb-1">Enter your password:</label>
+                    <input type="password" name="password" required class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring focus:ring-yellow-500">
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" @click="confirmDelete = false" class="text-sm text-gray-300 hover:text-white">Cancel</button>
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 px-4 py-2 text-sm rounded-lg text-white font-semibold">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endsection

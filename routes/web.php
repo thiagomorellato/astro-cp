@@ -64,3 +64,8 @@ Route::get('/donations/payment-cancelled', function () {
 use App\Http\Controllers\PayPalWebhookController;
 
 Route::post('/paypal/webhook', [PayPalWebhookController::class, 'handle'])->name('paypal.webhook');
+
+use App\Http\Controllers\UserController;
+
+Route::get('/user', [UserController::class, 'index'])->name('user');
+Route::post('/char/delete', [UserController::class, 'deleteChar'])->name('char.delete');
