@@ -78,9 +78,6 @@
             alert('You must be logged in to donate.');
             return;
         }
-
-        // TODO: Uncomment when PIX route is ready
-        // window.location.href = "{{ route('donations.pix') }}";
     }
 </script>
 @endsection
