@@ -35,10 +35,10 @@
     class="bg-white/10 backdrop-blur-md text-white p-6 rounded-xl max-w-2xl mx-auto shadow-lg border border-white/20"
 >
     <div class="flex space-x-4 justify-center mb-6">
-        <button @click="tab = 'account'" :class="tab === 'account' ? 'text-yellow-400 underline' : 'text-gray-300'" class="text-lg font-semibold">
+        <button @click="tab = 'account'" :class="tab === 'account' ? 'text-yellow-400 underline' : 'text-gray-300'" class="cursor-pointer text-lg font-semibold">
             Account
         </button>
-        <button @click="tab = 'chars'" :class="tab === 'chars' ? 'text-yellow-400 underline' : 'text-gray-300'" class="text-lg font-semibold">
+        <button @click="tab = 'chars'" :class="tab === 'chars' ? 'text-yellow-400 underline' : 'text-gray-300'" class="cursor-pointer text-lg font-semibold">
             Chars
         </button>
     </div>
@@ -47,8 +47,8 @@
     <div x-show="tab === 'account'" x-transition>
         <div class="space-y-4 text-sm">
             <div class="flex justify-between">
-                <span class="text-gray-300 font-semibold">Account Name:</span>
-                <span>{{ session('astrocp_user.username') }}</span>
+                <span class="text-gray-300 font-semibold ">Account:</span>
+                <span>{{ session('astrocp_user.userid') }}</span>
             </div>
             <div class="flex justify-between">
                 <span class="text-gray-300 font-semibold">VIP Status:</span>
@@ -62,7 +62,7 @@
             </div>
 
             <div class="pt-4">
-                <a href="#" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg shadow transition">
+                <a href="#" class="bg-gray-600 hover:bg-yellow-500 text-white px-4 py-2 rounded-lg shadow transition">
                     Subscribe to VIP
                 </a>
             </div>

@@ -10,7 +10,7 @@ class UserController extends Controller
     public function index()
     {
         if (!session()->has('astrocp_user')) {
-            return redirect()->route('login')->with('error', 'You must be logged in.');
+            return redirect()->route('account')->with('error', 'You must be logged in.');
         }
 
         $user = session('astrocp_user');
