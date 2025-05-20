@@ -69,6 +69,44 @@
             <span id="donate-text">Donate with PayPal</span>
         </button>
     </form>
+
+    <!-- Confirmation Modal -->
+    <div 
+        x-show="showModal" 
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-90"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-90"
+        x-cloak
+        class="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-50"
+    >
+        <div class="bg-white/10 backdrop-blur-md text-white p-6 rounded-xl shadow-lg border border-yellow-500 w-full max-w-sm">
+            <h3 class="text-xl font-semibold text-yellow-400 mb-3 text-center font-['Cinzel'] drop-shadow">
+                Confirm Donation
+            </h3>
+            <p class="text-sm text-center text-gray-200 mb-6">
+                Are you sure you want to donate <span class="font-bold text-yellow-300">${{ usd.toFixed(2) }}</span>?
+            </p>
+            <div class="flex justify-center gap-4">
+                <button 
+                    type="button" 
+                    @click="showModal = false"
+                    class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition"
+                >
+                    Cancel
+                </button>
+                <button 
+                    type="button" 
+                    @click="confirmDonation"
+                    class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg font-semibold transition"
+                >
+                    Yes, donate
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -78,6 +116,8 @@
             sc: 5000,
             rate: 1000,
             show: false,
+            showModal: false,
+            formEl: null,
             init() {
                 this.show = true;
                 this.syncFromUSD();
@@ -89,6 +129,13 @@
                 this.usd = parseFloat((this.sc / this.rate).toFixed(2));
             },
             handleLoading(event) {
+                event.preventDefault();
+                this.formEl = event.target;
+                this.showModal = true;
+            },
+            confirmDonation() {
+                this.showModal = false;
+
                 const btn = document.getElementById('donate-btn');
                 const spinner = document.getElementById('donate-spinner');
                 const text = document.getElementById('donate-text');
@@ -96,6 +143,8 @@
                 btn.disabled = true;
                 spinner.classList.remove('hidden');
                 text.textContent = 'Redirecting...';
+
+                this.formEl.submit();
             }
         }
     }
