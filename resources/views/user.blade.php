@@ -62,7 +62,7 @@
             </div>
 
             <div class="pt-4">
-                <a href="{{ route('vip.subscribe') }}" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg shadow transition">
+                <a href="#" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg shadow transition">
                     Subscribe to VIP
                 </a>
             </div>

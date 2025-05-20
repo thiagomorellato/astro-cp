@@ -99,10 +99,6 @@
                         window.location.href = "{{ route('donations.paypal') }}";
                     }, 500);
                 }
-
-                //if (method === 'pix') {
-                //    window.location.href = "{{ route('account') }}";
-                //}
             },
             redirectToLogin() {
                 window.location.href = "/account"; // ou qualquer rota de login do seu sistema
