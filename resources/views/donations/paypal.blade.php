@@ -87,7 +87,9 @@
                 Confirm Donation
             </h3>
             <p class="text-sm text-center text-gray-200 mb-6">
-                Are you sure you want to donate <span class="font-bold text-yellow-300">${{ usd.toFixed(2) }}</span>?
+                Are you sure you want to donate 
+<span class="font-bold text-yellow-300" x-text="'$' + usd.toFixed(2)"></span>?
+
             </p>
             <div class="flex justify-center gap-4">
                 <button 
