@@ -16,7 +16,7 @@
     </h2>
 
     <p class="mb-4 text-center text-sm text-gray-300">
-        Your donation helps keep the server alive and evolving.
+        Your donation helps keep the server alive and growing.
     </p>
 
     <div class="flex flex-col justify-center mb-2 space-y-4 max-w-xs mx-auto">
@@ -54,7 +54,7 @@
         event.preventDefault();
 
         if (!isLoggedIn) {
-            alert('Você precisa estar logado para fazer isso');
+            alert('You must be logged in to donate.');
             return;
         }
 
@@ -75,12 +75,12 @@
         event.preventDefault();
 
         if (!isLoggedIn) {
-            alert('Você precisa estar logado para fazer isso');
+            alert('You must be logged in to donate.');
             return;
         }
 
-        // Substitua '#' pela rota correta de doação via PIX quando implementar
-        window.location.href = "{{ route('donations.pix') }}";
+        // TODO: Uncomment when PIX route is ready
+        // window.location.href = "{{ route('donations.pix') }}";
     }
 </script>
 @endsection
