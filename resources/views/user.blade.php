@@ -36,11 +36,23 @@
 
     class="bg-white/10 backdrop-blur-md text-white p-6 rounded-xl max-w-2xl mx-auto shadow-lg border border-white/20"
 >
-    <div class="flex space-x-4 justify-center mb-6">
-        <button @click="tab = 'account'" :class="tab === 'account' ? 'text-yellow-400 underline' : 'text-gray-300'" class="cursor-pointer text-lg font-semibold">
+    <div class="absolute -top-5 left-6 flex space-x-2">
+        <button 
+            @click="tab = 'account'" 
+            :class="tab === 'account' 
+                ? 'bg-white/20 border-white/40 text-yellow-400' 
+                : 'bg-gray-700/40 border-gray-500 text-gray-300'" 
+            class="px-4 py-2 rounded-t-lg border font-semibold text-sm backdrop-blur transition"
+        >
             Account
         </button>
-        <button @click="tab = 'chars'" :class="tab === 'chars' ? 'text-yellow-400 underline' : 'text-gray-300'" class="cursor-pointer text-lg font-semibold">
+        <button 
+            @click="tab = 'chars'" 
+            :class="tab === 'chars' 
+                ? 'bg-white/20 border-white/40 text-yellow-400' 
+                : 'bg-gray-700/40 border-gray-500 text-gray-300'" 
+            class="px-4 py-2 rounded-t-lg border font-semibold text-sm backdrop-blur transition"
+        >
             Chars
         </button>
     </div>
@@ -81,7 +93,7 @@
                     {{-- Reset Look icon --}}
                     <button 
                         @click="selectedChar = '{{ $char->name }}'; confirmLook = true;" 
-                        class="text-purple-400 hover:text-purple-500" 
+                        class="text-yellow-400 hover:text-yellow-500 cursor-pointer" 
                         title="Reset look"
                     >
                         🎭
@@ -90,7 +102,7 @@
                     {{-- Reset position icon --}}
                     <button 
                         @click="selectedChar = '{{ $char->name }}'; confirmReset = true;" 
-                        class="text-yellow-400 hover:text-yellow-500" 
+                        class="text-yellow-400 hover:text-yellow-500 cursor-pointer" 
                         title="Reset position"
                     >
                         📍
@@ -99,7 +111,7 @@
                     {{-- Delete icon --}}
                     <button 
                         @click="selectedChar = '{{ $char->name }}'; confirmDelete = true;" 
-                        class="text-red-400 hover:text-red-600" 
+                        class="text-red-400 hover:text-red-600 cursor-pointer" 
                         title="Delete character"
                     >
                         🗑️
@@ -173,7 +185,7 @@
         x-cloak
     >
         <div class="bg-gray-900 text-white rounded-xl p-6 w-full max-w-sm border border-white/20 shadow-xl space-y-4">
-            <h3 class="text-lg font-bold text-purple-400">Reset Look</h3>
+            <h3 class="text-lg font-bold text-yellow-500">Reset Look</h3>
             <p class="text-sm text-gray-300">
                 Are you sure you want to reset <span class="font-semibold text-white" x-text="selectedChar"></span>'s appearance?
             </p>
@@ -182,7 +194,7 @@
                 <input type="hidden" name="char_name" :value="selectedChar">
                 <div class="flex justify-end gap-2">
                     <button type="button" @click="confirmLook = false" class="text-sm text-gray-300 hover:text-white">Cancel</button>
-                    <button type="submit" class="bg-purple-500 hover:bg-purple-600 px-4 py-2 text-sm rounded-lg text-white font-semibold">Reset</button>
+                    <button type="submit" class="bg-yellow-400 hover:bg-yellow-500 px-4 py-2 text-sm rounded-lg text-white font-semibold">Reset</button>
                 </div>
             </form>
         </div>
