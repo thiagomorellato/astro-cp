@@ -41,6 +41,16 @@ class PayPalSubscriptionController extends Controller
         }
 
         $data = $response->json();
+
+        $subscriptionId = $data['id'];
+
+        \DB::table('donations_pp')->insert([
+            'userid' => $userid,
+            'paypal_subscription_id' => $subscriptionId,
+            'sub_status' => 'inactive',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
         $approveUrl = collect($data['links'])->firstWhere('rel', 'approve')['href'] ?? null;
 
         return response()->json(['approve_url' => $approveUrl]);
