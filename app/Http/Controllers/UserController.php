@@ -131,4 +131,46 @@ class UserController extends Controller
 
         return back()->with('success', 'Character position reset to Prontera.');
     }
+    
+    public function resetLook(Request $request)
+    {
+        if (!session()->has('astrocp_user')) {
+            return redirect()->route('login')->with('error', 'You must be logged in.');
+        }
+
+        $user = session('astrocp_user');
+        $userid = $user['userid'];
+        $charName = $request->input('char_name');
+
+        $userData = DB::connection('ragnarok')
+            ->table('login')
+            ->where('userid', $userid)
+            ->first();
+
+        if (!$userData) {
+            return back()->with('error', 'User not found.');
+        }
+
+        $char = DB::connection('ragnarok')
+            ->table('char')
+            ->where('name', $charName)
+            ->where('account_id', $userData->account_id)
+            ->first();
+
+        if (!$char) {
+            return back()->with('error', 'Character not found.');
+        }
+
+        DB::connection('ragnarok')
+            ->table('char')
+            ->where('char_id', $char->char_id)
+            ->update([
+                'hair' => 1,
+                'hair_color' => 0,
+                'clothes_color' => 0,
+            ]);
+
+        return back()->with('success', 'Character look has been reset.');
+    }
+
 }

@@ -31,7 +31,9 @@
 @endif
 
 <div 
-    x-data="{ tab: 'account', confirmDelete: false, confirmReset: false, selectedChar: null }"
+
+    x-data="{ tab: 'account', confirmDelete: false, confirmReset: false, confirmLook: false, selectedChar: null }"
+
     class="bg-white/10 backdrop-blur-md text-white p-6 rounded-xl max-w-2xl mx-auto shadow-lg border border-white/20"
 >
     <div class="flex space-x-4 justify-center mb-6">
@@ -72,29 +74,39 @@
     {{-- Chars Tab --}}
     <div x-show="tab === 'chars'" x-transition>
         <div class="space-y-3">
-            @@forelse($characters as $char)
-                <div class="bg-gray-800/70 px-4 py-3 rounded-lg flex justify-between items-center border border-gray-600">
-                    <span>{{ $char->name }}</span>
-                    <div class="flex items-center gap-2">
-                        {{-- Reset position icon --}}
-                        <button 
-                            @click="selectedChar = '{{ $char->name }}'; confirmReset = true;" 
-                            class="text-yellow-400 hover:text-yellow-500" 
-                            title="Reset position"
-                        >
-                            📍
-                        </button>
+            @forelse($characters as $char)
+            <div class="bg-gray-800/70 px-4 py-3 rounded-lg flex justify-between items-center border border-gray-600">
+                <span>{{ $char->name }}</span>
+                <div class="flex items-center gap-2">
+                    {{-- Reset Look icon --}}
+                    <button 
+                        @click="selectedChar = '{{ $char->name }}'; confirmLook = true;" 
+                        class="text-purple-400 hover:text-purple-500" 
+                        title="Reset look"
+                    >
+                        🎭
+                    </button>
 
-                        {{-- Delete icon (trash) --}}
-                        <button 
-                            @click="selectedChar = '{{ $char->name }}'; confirmDelete = true;"
-                            class="text-red-400 hover:text-red-600"
-                            title="Delete character"
-                        >
-                            🗑️
-                        </button>
-                    </div>
+                    {{-- Reset position icon --}}
+                    <button 
+                        @click="selectedChar = '{{ $char->name }}'; confirmReset = true;" 
+                        class="text-yellow-400 hover:text-yellow-500" 
+                        title="Reset position"
+                    >
+                        📍
+                    </button>
+
+                    {{-- Delete icon --}}
+                    <button 
+                        @click="selectedChar = '{{ $char->name }}'; confirmDelete = true;" 
+                        class="text-red-400 hover:text-red-600" 
+                        title="Delete character"
+                    >
+                        🗑️
+                    </button>
                 </div>
+            </div>
+
             @empty
                 <p class="text-center text-gray-400 italic">No characters found.</p>
             @endforelse
@@ -152,5 +164,29 @@
             </form>
         </div>
     </div>
+
+    {{-- Reset Look Modal --}}
+    <div 
+        x-show="confirmLook"
+        x-transition
+        class="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+        x-cloak
+    >
+        <div class="bg-gray-900 text-white rounded-xl p-6 w-full max-w-sm border border-white/20 shadow-xl space-y-4">
+            <h3 class="text-lg font-bold text-purple-400">Reset Look</h3>
+            <p class="text-sm text-gray-300">
+                Are you sure you want to reset <span class="font-semibold text-white" x-text="selectedChar"></span>'s appearance?
+            </p>
+            <form method="POST" action="{{ route('char.resetLook') }}" class="space-y-4">
+                @csrf
+                <input type="hidden" name="char_name" :value="selectedChar">
+                <div class="flex justify-end gap-2">
+                    <button type="button" @click="confirmLook = false" class="text-sm text-gray-300 hover:text-white">Cancel</button>
+                    <button type="submit" class="bg-purple-500 hover:bg-purple-600 px-4 py-2 text-sm rounded-lg text-white font-semibold">Reset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </div>
 @endsection
