@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AstrocpLoginController;
 use App\Http\Controllers\PayPalController;
 use App\Http\Controllers\PayPalSubscriptionController;
-use App\Http\Controllers\PayPalSubscriptionWebhookController
+use App\Http\Controllers\PayPalSubscriptionWebhookController;
 
 Route::get('/', function () {
     return view('index');
