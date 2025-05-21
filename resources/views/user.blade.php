@@ -65,22 +65,17 @@
                 <span class="text-gray-300 font-semibold ">Account:</span>
                 <span>{{ session('astrocp_user.userid') }}</span>
             </div>
-            <div class="flex justify-between">
+            <div class="flex justify-between items-center">
                 <span class="text-gray-300 font-semibold">VIP Status:</span>
-                <span>
-                    @if($isVip)
-                        <span class="text-green-400 font-bold">Active</span>
+                @if($isVip)
+                    <span class="text-green-400 font-bold">Active</span>
                     @else
-                        <span class="text-red-400 font-bold">Inactive</span>
+                        <button onclick="openVipModal()" class="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded">
+                            Subscribe to VIP
+                        </button>
                     @endif
-                </span>
             </div>
 
-            <div class="pt-4">
-                <a href="#" class="bg-gray-600 hover:bg-yellow-500 text-white px-4 py-2 rounded-lg shadow transition">
-                    Subscribe to VIP
-                </a>
-            </div>
         </div>
     </div>
 
@@ -200,6 +195,45 @@
             </form>
         </div>
     </div>
+    {{-- Vip Modal --}}
+    <div id="vipModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg w-full max-w-md relative">
+            <h2 class="text-xl font-semibold mb-2">Subscribe to VIP</h2>
+            <p class="mb-4">Subscribe for <strong>$10 USD</strong> per month to unlock VIP status and benefits.</p>
+            <label for="paypalEmail" class="block mb-1">Enter your PayPal email:</label>
+            <input type="email" id="paypalEmail" class="w-full border px-3 py-2 rounded mb-4" required>
+
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeVipModal()" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
+                <button onclick="startVipSubscription()" class="px-4 py-2 bg-blue-600 text-white rounded">Subscribe</button>
+            </div>
+        </div>
+    </div>
 
 </div>
+<script>
+    function openVipModal() {
+        document.getElementById('vipModal').classList.remove('hidden');
+    }
+    function closeVipModal() {
+        document.getElementById('vipModal').classList.add('hidden');
+    }
+    async function startVipSubscription() {
+        const email = document.getElementById('paypalEmail').value;
+        const response = await fetch("/paypal/subscribe/create", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({ email })
+        });
+        const data = await response.json();
+        if (data && data.approve_url) {
+            window.location.href = data.approve_url;
+        } else {
+            alert("Failed to start subscription.");
+        }
+    }
+</script>
 @endsection
