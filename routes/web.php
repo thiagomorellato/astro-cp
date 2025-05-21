@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AstrocpLoginController;
 use App\Http\Controllers\PayPalController;
+use App\Http\Controllers\PayPalSubscriptionController;
+use App\Http\Controllers\PayPalSubscriptionWebhookController
 
 Route::get('/', function () {
     return view('index');
@@ -71,4 +73,8 @@ Route::get('/user', [UserController::class, 'index'])->name('user');
 Route::post('/char/delete', [UserController::class, 'deleteChar'])->name('char.delete');
 Route::post('/char/reset-position', [UserController::class, 'resetPosition'])->name('char.resetPosition');
 Route::post('/char/reset-look', [UserController::class, 'resetLook'])->name('char.resetLook');
+
+
+Route::post('/paypal/subscribe/create', [PayPalSubscriptionController::class, 'create']);
+Route::post('/paypal/subscribe', [PayPalSubscriptionWebhookController::class, 'handle']);
 

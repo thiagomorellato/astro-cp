@@ -196,16 +196,36 @@
         </div>
     </div>
     {{-- Vip Modal --}}
-    <div id="vipModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-lg w-full max-w-md relative">
-            <h2 class="text-xl font-semibold mb-2">Subscribe to VIP</h2>
-            <p class="mb-4">Subscribe for <strong>$10 USD</strong> per month to unlock VIP status and benefits.</p>
-            <label for="paypalEmail" class="block mb-1">Enter your PayPal email:</label>
-            <input type="email" id="paypalEmail" class="w-full border px-3 py-2 rounded mb-4" required>
+    <div 
+        id="vipModal" 
+        x-transition
+        class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 hidden"
+        x-cloak
+    >
+        <div class="bg-gray-900 text-white rounded-xl p-6 w-full max-w-sm border border-white/20 shadow-xl space-y-4">
+            <h3 class="text-lg font-bold text-yellow-500">Subscribe to VIP</h3>
+            <p class="text-sm text-gray-300">
+                Subscribe for <span class="font-semibold text-white">$10 USD</span> per month to unlock VIP status and benefits.
+            </p>
+            
+            <div>
+                <label for="paypalEmail" class="text-sm block text-gray-300 mb-1">Enter your PayPal email:</label>
+                <input 
+                    type="email" 
+                    id="paypalEmail" 
+                    required 
+                    class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring focus:ring-yellow-500"
+                >
+            </div>
 
-            <div class="flex justify-end space-x-2">
-                <button onclick="closeVipModal()" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
-                <button onclick="startVipSubscription()" class="px-4 py-2 bg-blue-600 text-white rounded">Subscribe</button>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeVipModal()" class="text-sm text-gray-300 hover:text-white">Cancel</button>
+                <button 
+                    onclick="startVipSubscription()" 
+                    class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 text-sm rounded-lg text-white font-semibold"
+                >
+                    Subscribe
+                </button>
             </div>
         </div>
     </div>
