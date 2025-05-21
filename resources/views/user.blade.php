@@ -36,26 +36,27 @@
 
     class="bg-white/10 backdrop-blur-md text-white p-6 rounded-xl max-w-2xl mx-auto shadow-lg border border-white/20"
 >
-    <div class="absolute -top-5 left-6 flex space-x-2">
+    <div class="flex border-b border-white/20 mb-6">
         <button 
-            @click="tab = 'account'" 
+            @click="tab = 'account'"
             :class="tab === 'account' 
-                ? 'bg-white/20 border-white/40 text-yellow-400' 
-                : 'bg-gray-700/40 border-gray-500 text-gray-300'" 
-            class="px-4 py-2 rounded-t-lg border font-semibold text-sm backdrop-blur transition"
+                ? 'border-b-2 border-yellow-400 text-yellow-400' 
+                : 'text-gray-300 hover:text-white'" 
+            class="py-2 px-4 text-sm font-semibold transition"
         >
             Account
         </button>
         <button 
-            @click="tab = 'chars'" 
+            @click="tab = 'chars'"
             :class="tab === 'chars' 
-                ? 'bg-white/20 border-white/40 text-yellow-400' 
-                : 'bg-gray-700/40 border-gray-500 text-gray-300'" 
-            class="px-4 py-2 rounded-t-lg border font-semibold text-sm backdrop-blur transition"
+                ? 'border-b-2 border-yellow-400 text-yellow-400' 
+                : 'text-gray-300 hover:text-white'" 
+            class="py-2 px-4 text-sm font-semibold transition"
         >
             Chars
         </button>
     </div>
+
 
     {{-- Account Tab --}}
     <div x-show="tab === 'account'" x-transition>
