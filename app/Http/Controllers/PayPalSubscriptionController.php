@@ -16,7 +16,8 @@ class PayPalSubscriptionController extends Controller
     }
 
     // Pegar o account_id pela tabela login usando userid
-    $login = DB::table('login')->where('userid', $userid)->first();
+    $login = $login = DB::connection('ragnarok')->table('login')->where('userid', $userid)->first();
+
 
     if (!$login) {
         return response()->json(['error' => 'User not found'], 404);
@@ -55,7 +56,7 @@ class PayPalSubscriptionController extends Controller
     $subscriptionId = $data['id'];
 
     // Salvar na tabela subscriptions com o account_id correto
-    DB::table('subscriptions')->insert([
+    DB::connection('ragnarok')->table('subscriptions')->insert([
         'account_id' => $accountId,
         'subscription_id' => $subscriptionId,
         'sub_status' => 'inactive',

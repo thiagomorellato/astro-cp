@@ -40,12 +40,12 @@ public function handle(Request $request)
     switch ($eventType) {
         case 'PAYMENT.SALE.COMPLETED':
             // Atualiza sub_status para active
-            DB::table('subscriptions')
+            DB::connection('ragnarok')->table('subscriptions')
                 ->where('subscription_id', $subscriptionId)
                 ->update(['sub_status' => 'active']);
 
             // Atualiza vip_time
-            $login = DB::table('login')->where('userid', $accountId)->first();
+            $login = DB::connection('ragnarok')->table('login')->where('userid', $accountId)->first();
 
             if (!$login) {
                 Log::warning("User with userid $accountId not found in login");
@@ -60,7 +60,7 @@ public function handle(Request $request)
 
             $newVipTime = max($currentVipTime, $now) + $secondsToAdd;
 
-            DB::table('login')
+            DB::connection('ragnarok')->table('login')
                 ->where('userid', $accountId)
                 ->update(['vip_time' => $newVipTime]);
 
@@ -73,7 +73,7 @@ public function handle(Request $request)
 
             }
 
-            DB::table('donations_pp')->insert([
+            DB::connection('ragnarok')->table('donations_pp')->insert([
                 'account_id' => $accountId,
                 'amount_usd' => $amountUsd,
                 'credits' => 0, // ajustar se quiser outro valor
@@ -89,7 +89,7 @@ public function handle(Request $request)
 
         case 'BILLING.SUBSCRIPTION.EXPIRED':
             // Apenas marca como inativo
-            DB::table('subscriptions')
+            DB::connection('ragnarok')->table('subscriptions')
                 ->where('subscription_id', $subscriptionId)
                 ->update(['sub_status' => 'inactive']);
 
