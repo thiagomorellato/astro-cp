@@ -36,6 +36,7 @@ return [
         'secret' => env('PAYPAL_SECRET'),
         'base_url' => env('PAYPAL_BASE_URL', 'https://api-m.sandbox.paypal.com'),
         'webhook_id' => env('PAYPAL_WEBHOOK_ID'),
+        'sub_webhook_id' => env('PAYPAL_SUB_WEBHOOK_ID'),
         'conversion_rate' => 1000,
     ],
 
