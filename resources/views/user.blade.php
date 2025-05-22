@@ -70,7 +70,7 @@
                 @if($isVip)
                     <span class="text-green-400 font-bold">Active</span>
                     @else
-                      <button onclick="openVipModal()" class="bg-gray-500 hover:bg-yellow-500 text-white text-xs py-1 px-2 rounded">
+                      <button onclick="openVipModal()" class="bg-gray-500 hover:bg-yellow-500 text-white text-xs py-2 w-1/2 rounded">
                         Subscribe
                       </button>
                     @endif
