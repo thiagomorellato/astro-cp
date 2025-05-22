@@ -63,15 +63,15 @@
         <div class="space-y-4 text-sm">
             <div class="flex justify-between">
                 <span class="text-gray-300 font-semibold ">Account:</span>
-                <span>{{ session('astrocp_user.userid') }}</span>
+                <span class="w-1/2 flex justify-center">{{ session('astrocp_user.userid') }}</span>
             </div>
             <div class="flex justify-between items-center">
                 <span class="text-gray-300 font-semibold">VIP Status:</span>
                 @if($isVip)
                     <span class="text-green-400 font-bold">Active</span>
                     @else
-                      <button onclick="openVipModal()" class="bg-gray-500 hover:bg-yellow-500 text-white text-xs py-0.5 px-2 rounded">
-                        Subscribe to VIP
+                      <button onclick="openVipModal()" class="bg-gray-500 hover:bg-yellow-500 text-white text-xs py-1 px-2 rounded">
+                        Subscribe
                       </button>
                     @endif
             </div>
