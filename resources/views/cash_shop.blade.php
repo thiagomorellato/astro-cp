@@ -1,41 +1,58 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h1>Cash Shop</h1>
-
+    {{-- Feedback messages --}}
     @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @elseif(session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
+        <div 
+            x-data="{ show: true }" 
+            x-show="show"
+            x-transition:enter="transition ease-out duration-500"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100"
+            x-init="setTimeout(() => show = false, 4000)"
+            class="bg-green-600/90 text-white px-4 py-3 rounded-xl max-w-md mx-auto mb-4 shadow-lg border border-green-300/40 backdrop-blur"
+        >
+            <p class="text-sm font-semibold text-center">{{ session('success') }}</p>
+        </div>
     @endif
 
-    <form action="{{ route('cash.shop.import') }}" method="POST">
-        @csrf
-        <button class="btn btn-primary mb-3">Atualizar items_cash_db</button>
-    </form>
-
-    @if(count($items) > 0)
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>AegisName</th>
-                    <th>Name</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($items as $item)
-                    <tr>
-                        <td>{{ $item[0] }}</td>
-                        <td>{{ $item[1] }}</td>
-                        <td>{{ $item[2] }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @else
-        <p>Nenhum item encontrado no CSV.</p>
+    @if(session('error'))
+        <div 
+            x-data="{ show: true }" 
+            x-show="show"
+            x-transition:enter="transition ease-out duration-500"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100"
+            x-init="setTimeout(() => show = false, 4000)"
+            class="bg-red-600/90 text-white px-4 py-3 rounded-xl max-w-md mx-auto mb-4 shadow-lg border border-red-300/40 backdrop-blur"
+        >
+            <p class="text-sm font-semibold text-center">{{ session('error') }}</p>
+        </div>
     @endif
-</div>
+
+    {{-- Painel com estilo translúcido branco --}}
+    <div class="bg-white/10 backdrop-blur-md text-white p-6 rounded-xl max-w-2xl mx-auto shadow-lg border border-white/20">
+        <h2 class="text-xl font-bold mb-4 text-yellow-400 text-center">Upload de Itens</h2>
+
+        <form action="{{ route('admin.items.import') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+            @csrf
+            <div>
+                <label for="csv_file" class="block text-sm font-semibold text-gray-300 mb-1">Arquivo CSV:</label>
+                <input 
+                    type="file" 
+                    name="csv_file" 
+                    id="csv_file" 
+                    accept=".csv" 
+                    required 
+                    class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:ring-yellow-500"
+                >
+            </div>
+
+            <div class="flex justify-end">
+                <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 text-sm rounded-lg text-white font-semibold">
+                    Enviar e Importar
+                </button>
+            </div>
+        </form>
+    </div>
 @endsection
