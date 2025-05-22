@@ -55,7 +55,7 @@ class CashShopController extends Controller
             return redirect('/user');
         }
 
-        $csvPath = storage_path('storage/app/items.csv');
+        $csvPath = storage_path('app/items.csv');
 
         if (!file_exists($csvPath)) {
             return back()->with('error', 'CSV file not found.');
