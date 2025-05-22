@@ -31,7 +31,7 @@ class AstrocpLoginController extends Controller
 
         session(['astrocp_user' => ['userid' => $user->userid]]);
 
-        return redirect('/');
+        return redirect('/user');
     }
 
     public function showRegisterForm()
