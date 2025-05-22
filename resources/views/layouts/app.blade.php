@@ -35,7 +35,7 @@
       <!-- Left links -->
       <div class="gap-4 items-center absolute left-40 hidden md:flex">
         <a href="/" class="hover:text-yellow-400 transition">Home</a>
-        <a href="/account" class="hover:text-yellow-400 transition">Account</a>
+        <a href="/user" class="hover:text-yellow-400 transition">Account</a>
         <a href="/donations" class="hover:text-yellow-400 transition">Donations</a>
       </div>
 
@@ -71,7 +71,7 @@
     <div x-show="mobileMenuOpen" x-transition class="md:hidden bg-black/80 backdrop-blur-md px-6 pb-4">
       <div class="flex flex-col items-center space-y-2 pt-2">
         <a href="/" class="hover:text-yellow-400 transition">Home</a>
-        <a href="/account" class="hover:text-yellow-400 transition">Account</a>
+        <a href="/user" class="hover:text-yellow-400 transition">Account</a>
         <a href="/donations" class="hover:text-yellow-400 transition">Donations</a>
         <a href="/downloads" class="hover:text-yellow-400 transition">Downloads</a>
         <a href="/info" class="hover:text-yellow-400 transition">Info</a>
