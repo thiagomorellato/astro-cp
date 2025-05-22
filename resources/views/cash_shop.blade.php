@@ -34,7 +34,7 @@
     <div class="bg-white/10 backdrop-blur-md text-white p-6 rounded-xl max-w-2xl mx-auto shadow-lg border border-white/20">
         <h2 class="text-xl font-bold mb-4 text-yellow-400 text-center">Upload de Itens</h2>
 
-        <form action="{{ route('admin.items.import') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+        <form action="{{ route('cash.shop.import') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
             @csrf
             <div>
                 <label for="csv_file" class="block text-sm font-semibold text-gray-300 mb-1">Arquivo CSV:</label>
