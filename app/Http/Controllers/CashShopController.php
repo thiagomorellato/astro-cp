@@ -41,7 +41,7 @@ class CashShopController extends Controller
     }
     public function import()
     {
-        $userid = Session::get('userid');
+        $userid = Session::get('astrocp_user.userid');
 
         if (!$userid) {
             return redirect('/login');
