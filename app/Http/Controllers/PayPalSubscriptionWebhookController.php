@@ -28,7 +28,7 @@ public function handle(Request $request)
         return response()->json(['error' => 'Missing subscription ID'], 400);
     }
 
-    $subscription = DB::table('subscriptions')->where('subscription_id', $subscriptionId)->first();
+    $subscription = DB::connection('ragnarok')->table('subscriptions')->where('subscription_id', $subscriptionId)->first();
 
     if (!$subscription) {
         Log::warning("Subscription ID $subscriptionId not found in subscriptions");
