@@ -80,5 +80,5 @@ Route::post('/paypal/subscribe/create', [PayPalSubscriptionController::class, 'c
 Route::post('/paypal/subscribe', [PayPalSubscriptionWebhookController::class, 'handle']);
 
 
-Route::get('/cash-shop', [CashShopController::class, 'index'])->name('cash.shop');
+Route::get('/cash_shop', [CashShopController::class, 'index'])->name('cash.shop');
 Route::post('/cash-shop/import', [CashShopController::class, 'import'])->name('cash.shop.import');
