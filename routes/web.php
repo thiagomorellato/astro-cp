@@ -5,6 +5,7 @@ use App\Http\Controllers\AstrocpLoginController;
 use App\Http\Controllers\PayPalController;
 use App\Http\Controllers\PayPalSubscriptionController;
 use App\Http\Controllers\PayPalSubscriptionWebhookController;
+use App\Http\Controllers\CashShopController;
 
 Route::get('/', function () {
     return view('index');
@@ -78,3 +79,6 @@ Route::post('/char/reset-look', [UserController::class, 'resetLook'])->name('cha
 Route::post('/paypal/subscribe/create', [PayPalSubscriptionController::class, 'create']);
 Route::post('/paypal/subscribe', [PayPalSubscriptionWebhookController::class, 'handle']);
 
+
+Route::get('/cash-shop', [CashShopController::class, 'index'])->name('cash.shop');
+Route::post('/cash-shop/import', [CashShopController::class, 'import'])->name('cash.shop.import');
