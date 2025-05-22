@@ -42,7 +42,7 @@
             :class="tab === 'account' 
                 ? 'border-b-2 border-yellow-400 text-yellow-400' 
                 : 'text-gray-300 hover:text-white'" 
-            class="py-2 px-4 text-sm font-semibold transition"
+            class="py-2 px-4 text-sm font-semibold transition cursor-pointer"
         >
             Account
         </button>
@@ -51,7 +51,7 @@
             :class="tab === 'chars' 
                 ? 'border-b-2 border-yellow-400 text-yellow-400' 
                 : 'text-gray-300 hover:text-white'" 
-            class="py-2 px-4 text-sm font-semibold transition"
+            class="py-2 px-4 text-sm font-semibold transition cursor-pointer"
         >
             Chars
         </button>
@@ -70,9 +70,9 @@
                 @if($isVip)
                     <span class="text-green-400 font-bold">Active</span>
                     @else
-                        <button onclick="openVipModal()" class="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded">
-                            Subscribe to VIP
-                        </button>
+                      <button onclick="openVipModal()" class="bg-gray-500 hover:bg-yellow-500 text-white text-xs py-0.5 px-2 rounded">
+                        Subscribe to VIP
+                      </button>
                     @endif
             </div>
 
