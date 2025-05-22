@@ -45,10 +45,10 @@ public function handle(Request $request)
                 ->update(['sub_status' => 'active']);
 
             // Atualiza vip_time
-            $login = DB::connection('ragnarok')->table('login')->where('userid', $accountId)->first();
+            $login = DB::connection('ragnarok')->table('login')->where('account_id', $accountId)->first();
 
             if (!$login) {
-                Log::warning("User with userid $accountId not found in login");
+                Log::warning("User with ccount_id $accountId not found in login");
                 return response()->json(['error' => 'User not found'], 404);
             }
 
@@ -61,10 +61,10 @@ public function handle(Request $request)
             $newVipTime = max($currentVipTime, $now) + $secondsToAdd;
 
             DB::connection('ragnarok')->table('login')
-                ->where('userid', $accountId)
+                ->where('account_id', $accountId)
                 ->update(['vip_time' => $newVipTime]);
 
-            Log::info("vip_time updated for user $accountId to $newVipTime");
+            Log::info("vip_time updated for account $accountId to $newVipTime");
 
             // Agora insere a doação na donations_pp
             $amountUsd = 0.00;
