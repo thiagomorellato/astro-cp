@@ -10,7 +10,7 @@ class CashShopController extends Controller
 {
     public function index()
     {
-        $userid = Session::get('userid');
+        $userid = Session::get('astrocp_user.userid');
 
         if (!$userid) {
             return redirect('/login');
