@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Symfony\Component\Yaml\Yaml;
+use Symfony\Component\Yaml\Dumper;
 
 class CashShopController extends Controller
 {
@@ -122,19 +123,28 @@ class CashShopController extends Controller
     }
 public function exportYaml()
 {
-    $tabs = CashShop::distinct()->pluck('tab');
+    $tabs = DB::connection('ragnarok')
+        ->table('cash_shop')
+        ->distinct()
+        ->pluck('tab');
 
     $body = [];
 
     foreach ($tabs as $tab) {
-        $items = CashShop::where('tab', $tab)->get();
+        $items = DB::connection('ragnarok')
+            ->table('cash_shop')
+            ->where('tab', $tab)
+            ->get();
 
         $itemsArray = [];
+
         foreach ($items as $item) {
-            $itemsArray[] = [
-                'Item' => $item->aegisname,
-                'Price' => (int) $item->price,
-            ];
+            if (!empty($item->aegisname) && $item->price > 0) {
+                $itemsArray[] = [
+                    'Item' => $item->aegisname,
+                    'Price' => (int) $item->price,
+                ];
+            }
         }
 
         $body[] = [
@@ -151,10 +161,10 @@ public function exportYaml()
         'Body' => $body,
     ];
 
-    $yaml = Yaml::dump($yamlData, 10, 2, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK);
+    $yaml = Yaml::dump($yamlData, 10, 2);
+    $path = base_path('item_cash.yml');
+    file_put_contents($path, $yaml);
 
-    file_put_contents(base_path('item_cash.yml'), $yaml);
-
-    return response()->download(base_path('item_cash.yml'))->deleteFileAfterSend();
+    return response()->download($path)->deleteFileAfterSend();
 }
 }
