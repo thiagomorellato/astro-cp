@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Session;
 
 class CashShopController extends Controller
 {
+    private $tabs = ['New', 'Hot', 'Limited', 'Rental', 'Permanent', 'Scrolls', 'Consumables', 'Other', 'Sale'];
+
     public function index()
     {
         $userid = Session::get('astrocp_user.userid');
@@ -25,9 +27,10 @@ class CashShopController extends Controller
             return redirect('/user');
         }
 
-        // Lê o CSV
-        return view('cash_shop');
+        // Apenas renderiza view vazia, ou pode enviar tabs para inicializar
+        return view('cash_shop', ['tabs' => $this->tabs]);
     }
+
     public function import()
     {
         $userid = Session::get('astrocp_user.userid');
@@ -66,5 +69,54 @@ class CashShopController extends Controller
         fclose($file);
 
         return redirect()->route('cash.shop')->with('success', 'Items imported successfully!');
+    }
+
+    // Nova função para retornar items por tab e pagina
+    public function showItemsByTab(Request $request)
+    {
+        $userid = Session::get('astrocp_user.userid');
+        if (!$userid) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $groupId = DB::connection('ragnarok')->table('login')
+            ->where('userid', $userid)
+            ->value('group_id');
+
+        if ($groupId != 99) {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
+
+        $tab = $request->query('tab', 'New');
+        if (!in_array($tab, $this->tabs)) {
+            $tab = 'New';
+        }
+
+        $perPage = 16;
+        $page = (int) $request->query('page', 1);
+        if ($page < 1) $page = 1;
+        $offset = ($page - 1) * $perPage;
+
+        $total = DB::connection('ragnarok')
+            ->table('cash_shop')
+            ->where('tab', $tab)
+            ->count();
+
+        $items = DB::connection('ragnarok')
+            ->table('cash_shop')
+            ->where('tab', $tab)
+            ->orderBy('id')
+            ->offset($offset)
+            ->limit($perPage)
+            ->get(['id', 'aegisname', 'price']);
+
+        return response()->json([
+            'items' => $items,
+            'total' => $total,
+            'perPage' => $perPage,
+            'currentPage' => $page,
+            'totalPages' => ceil($total / $perPage),
+            'tab' => $tab,
+        ]);
     }
 }
