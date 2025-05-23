@@ -26,6 +26,7 @@ class CashShopController extends Controller
         }
 
         // Lê o CSV
+        return view('cash_shop', ['items' => $items]);
     }
     public function import()
     {
