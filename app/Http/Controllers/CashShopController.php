@@ -120,52 +120,41 @@ class CashShopController extends Controller
             'tab' => $tab,
         ]);
     }
-    public function exportYaml()
-    {
-        // Busca todos os tabs do DB e seus itens
-        $tabs = ['New', 'Hot', 'Limited', 'Rental', 'Permanent', 'Scrolls', 'Consumables', 'Other', 'Sale'];
+public function exportYaml()
+{
+    $tabs = CashShop::distinct()->pluck('tab');
 
-        $body = [];
+    $body = [];
 
-        foreach ($tabs as $tab) {
-            $items = DB::connection('ragnarok')
-                ->table('cash_shop')
-                ->where('tab', $tab)
-                ->orderBy('id')
-                ->get(['aegisname', 'price']);
+    foreach ($tabs as $tab) {
+        $items = CashShop::where('tab', $tab)->get();
 
-            if ($items->isEmpty()) {
-                continue; // pula tabs sem itens
-            }
-
-            // Monta array de itens no formato necessário
-            $itemsArray = [];
-            foreach ($items as $item) {
-                $itemsArray[] = (object)[
+        $itemsArray = [];
+        foreach ($items as $item) {
+            $itemsArray[] = [
                 'Item' => $item->aegisname,
-                'Price' => (int)$item->price,
-                ];
-            }
-
-            $body[] = [
-                'Tab' => $tab,
-                'Items' => $itemsArray,
+                'Price' => (int) $item->price,
             ];
         }
 
-        $yamlArray = [
-            'Header' => [
-                'Type' => 'ITEM_CASH_DB',
-                'Version' => 1,
-            ],
-            'Body' => $body,
+        $body[] = [
+            'Tab' => $tab,
+            'Items' => $itemsArray,
         ];
-
-        $yaml = Yaml::dump($yamlArray, 4, 2, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK);
-
-        // Forçar download do arquivo
-        return response($yaml, 200)
-            ->header('Content-Type', 'application/x-yaml')
-            ->header('Content-Disposition', 'attachment; filename="item_cash.yml"');
     }
+
+    $yamlData = [
+        'Header' => [
+            'Type' => 'ITEM_CASH_DB',
+            'Version' => 1,
+        ],
+        'Body' => $body,
+    ];
+
+    $yaml = Yaml::dump($yamlData, 10, 2, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK);
+
+    file_put_contents(base_path('item_cash.yml'), $yaml);
+
+    return response()->download(base_path('item_cash.yml'))->deleteFileAfterSend();
+}
 }
