@@ -26,18 +26,6 @@ class CashShopController extends Controller
         }
 
         // Lê o CSV
-        $csvPath = resource_path('csv/items.csv');
-        $items = [];
-
-        if (file_exists($csvPath)) {
-            $file = fopen($csvPath, 'r');
-            while (($data = fgetcsv($file)) !== FALSE) {
-                $items[] = $data;
-            }
-            fclose($file);
-        }
-
-        return view('cash_shop', ['items' => $items]);
     }
     public function import()
     {
@@ -55,7 +43,7 @@ class CashShopController extends Controller
             return redirect('/user');
         }
 
-        $csvPath = storage_path('app/items.csv');
+        $csvPath = resource_path('csv/items.csv');
 
         if (!file_exists($csvPath)) {
             return back()->with('error', 'CSV file not found.');
