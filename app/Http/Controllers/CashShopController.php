@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Symfony\Component\Yaml\Yaml;
 
 class CashShopController extends Controller
 {
@@ -118,5 +119,53 @@ class CashShopController extends Controller
             'totalPages' => ceil($total / $perPage),
             'tab' => $tab,
         ]);
+    }
+    public function exportYaml()
+    {
+        // Busca todos os tabs do DB e seus itens
+        $tabs = ['New', 'Hot', 'Limited', 'Rental', 'Permanent', 'Scrolls', 'Consumables', 'Other', 'Sale'];
+
+        $body = [];
+
+        foreach ($tabs as $tab) {
+            $items = DB::connection('ragnarok')
+                ->table('cash_shop')
+                ->where('tab', $tab)
+                ->orderBy('id')
+                ->get(['aegisname', 'price']);
+
+            if ($items->isEmpty()) {
+                continue; // pula tabs sem itens
+            }
+
+            // Monta array de itens no formato necessário
+            $itemsArray = [];
+            foreach ($items as $item) {
+                $itemsArray[] = [
+                    'Item' => $item->aegisname,
+                    'Price' => (int)$item->price,
+                ];
+            }
+
+            $body[] = [
+                'Tab' => $tab,
+                'Items' => $itemsArray,
+            ];
+        }
+
+        $yamlArray = [
+            'Header' => [
+                'Type' => 'ITEM_CASH_DB',
+                'Version' => 1,
+            ],
+            'Body' => $body,
+        ];
+
+        $yaml = Yaml::dump($yamlArray, 4, 2, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK);
+
+        // Forçar download do arquivo
+        return response($yaml, 200)
+            ->header('Content-Type', 'application/x-yaml')
+            ->header('Content-Disposition', 'attachment; filename="item_cash.yml"');
     }
 }

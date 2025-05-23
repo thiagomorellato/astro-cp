@@ -84,3 +84,4 @@ Route::get('/cash_shop', [CashShopController::class, 'index'])->name('cash.shop'
 Route::post('/cash-shop/import', [CashShopController::class, 'import'])->name('cash.shop.import');
 // Rota API para buscar os itens por tab e página
 Route::get('/cash-shop/items', [CashShopController::class, 'showItemsByTab'])->name('cash.shop.items');
+Route::get('/cash-shop/export-yaml', [CashShopController::class, 'exportYaml'])->name('cash.shop.exportYaml');

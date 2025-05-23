@@ -12,7 +12,14 @@
             <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg font-semibold transition">
                 Update DB
             </button>
+            
         </form>
+        <form method="GET" action="{{ route('cash.shop.exportYaml') }}">
+    <button type="submit" class="w-full mt-4 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold transition">
+        Export YAML
+    </button>
+</form>
+
     </div>
 
     <!-- Cash Shop Tabs e Itens -->
