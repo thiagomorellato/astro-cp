@@ -213,4 +213,10 @@ public function addItems(Request $request)
 
     return redirect()->route('cash.shop')->with('success', "$inserted items added to $tab tab.");
 }
+public function destroy($id)
+{
+    \DB::connection('ragnarok')->table('cash_shop')->where('item_id', $id)->delete();
+    return response()->json(['success' => true]);
+}
+
 }
