@@ -110,7 +110,7 @@ class CashShopController extends Controller
             ->orderBy('id')
             ->offset($offset)
             ->limit($perPage)
-            ->get(['id', 'aegisname', 'price']);
+            ->get(['id', 'AegisName', 'price']);
 
         return response()->json([
             'items' => $items,
@@ -139,9 +139,9 @@ public function exportYaml()
         $itemsArray = [];
 
         foreach ($items as $item) {
-            if (!empty($item->aegisname) && $item->price > 0) {
+            if (!empty($item->AegisName) && $item->price > 0) {
                 $itemsArray[] = [
-                    'Item' => $item->aegisname,
+                    'Item' => $item->AegisName,
                     'Price' => (int) $item->price,
                 ];
             }
