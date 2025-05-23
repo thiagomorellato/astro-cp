@@ -153,17 +153,22 @@ public function exportYaml()
         ];
     }
 
-    $yamlData = [
-        'Header' => [
-            'Type' => 'ITEM_CASH_DB',
-            'Version' => 1,
-        ],
-        'Body' => $body,
-    ];
+    $yamlString = "Header:\n";
+    $yamlString .= "  Type: ITEM_CASH_DB\n";
+    $yamlString .= "  Version: 1\n";
+    $yamlString .= "Body:\n";
 
-    $yaml = Yaml::dump($yamlData, 10, 2);
+    foreach ($body as $entry) {
+        $yamlString .= "  - Tab: {$entry['Tab']}\n";
+        $yamlString .= "    Items:\n";
+        foreach ($entry['Items'] as $item) {
+            $yamlString .= "      - Item: {$item['Item']}\n";
+            $yamlString .= "        Price: {$item['Price']}\n";
+        }
+    }
+
     $path = base_path('item_cash.yml');
-    file_put_contents($path, $yaml);
+    file_put_contents($path, $yamlString);
 
     return response()->download($path)->deleteFileAfterSend();
 }
