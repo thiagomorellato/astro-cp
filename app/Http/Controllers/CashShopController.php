@@ -141,9 +141,9 @@ class CashShopController extends Controller
             // Monta array de itens no formato necessário
             $itemsArray = [];
             foreach ($items as $item) {
-                $itemsArray[] = [
-                    'Item' => $item->aegisname,
-                    'Price' => (int)$item->price,
+                $itemsArray[] = (object)[
+                'Item' => $item->aegisname,
+                'Price' => (int)$item->price,
                 ];
             }
 
