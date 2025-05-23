@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-4xl mx-auto p-6">
+<div x-data="cashShop()" x-init="init()" class="max-w-4xl mx-auto p-6 text-white">
 
     <!-- Botões de Controle -->
-    <div class="bg-white/10 backdrop-blur-md text-white p-6 rounded-xl shadow-lg border border-white/20 mb-8">
+    <div class="bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-lg border border-white/20 mb-8">
         <h2 class="text-lg font-semibold mb-4 text-center text-yellow-400">Cash Shop Manager</h2>
 
         <form method="POST" action="{{ route('cash.shop.import') }}">
@@ -29,7 +29,7 @@
     </div>
 
     <!-- Loja por Abas -->
-    <div x-data="cashShop()" x-init="init()" class="text-white">
+    <div>
         <!-- Tabs -->
         <div class="flex flex-wrap gap-2 mb-4">
             <template x-for="tab in tabs" :key="tab">
@@ -75,44 +75,45 @@
             >Next</button>
         </div>
     </div>
-</div>
 
-<!-- Modal para Adicionar Itens -->
-<div 
-    x-show="addItemModal"
-    x-transition
-    class="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
-    x-cloak
->
-    <div class="bg-gray-900 text-white rounded-xl p-6 w-full max-w-md border border-white/20 shadow-xl space-y-4">
-        <h3 class="text-lg font-bold text-green-500">Add Items</h3>
+    <!-- Modal para Adicionar Itens -->
+    <div 
+        x-show="addItemModal"
+        x-transition
+        class="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+        x-cloak
+    >
+        <div class="bg-gray-900 text-white rounded-xl p-6 w-full max-w-md border border-white/20 shadow-xl space-y-4">
+            <h3 class="text-lg font-bold text-green-500">Add Items</h3>
 
-        <form method="POST" action="{{ route('cash.shop.addItems') }}" class="space-y-4">
-            @csrf
+            <form method="POST" action="{{ route('cash.shop.addItems') }}" class="space-y-4">
+                @csrf
 
-            <!-- Aba -->
-            <div>
-                <label class="text-sm text-gray-300 font-semibold">Select Tab:</label>
-                <select name="tab" class="w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg p-2 text-white">
-                    @foreach($tabs as $tab)
-                        <option value="{{ $tab }}">{{ $tab }}</option>
-                    @endforeach
-                </select>
-            </div>
+                <!-- Aba -->
+                <div>
+                    <label class="text-sm text-gray-300 font-semibold">Select Tab:</label>
+                    <select name="tab" class="w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg p-2 text-white">
+                        @foreach($tabs as $tab)
+                            <option value="{{ $tab }}">{{ $tab }}</option>
+                        @endforeach
+                    </select>
+                </div>
 
-            <!-- Itens -->
-            <div>
-                <label class="text-sm text-gray-300 font-semibold">Items (ID:PRICE,ID:PRICE...)</label>
-                <textarea name="bulk_items" rows="3" class="w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg p-2 text-white placeholder-gray-500" placeholder="1234:500,2345:300"></textarea>
-            </div>
+                <!-- Itens -->
+                <div>
+                    <label class="text-sm text-gray-300 font-semibold">Items (ID:PRICE,ID:PRICE...)</label>
+                    <textarea name="bulk_items" rows="3" class="w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg p-2 text-white placeholder-gray-500" placeholder="1234:500,2345:300"></textarea>
+                </div>
 
-            <!-- Botões -->
-            <div class="flex justify-end gap-2">
-                <button type="button" @click="addItemModal = false" class="text-sm text-gray-300 hover:text-white">Cancel</button>
-                <button type="submit" class="bg-green-600 hover:bg-green-700 px-4 py-2 text-sm rounded-lg text-white font-semibold">Add</button>
-            </div>
-        </form>
+                <!-- Botões -->
+                <div class="flex justify-end gap-2">
+                    <button type="button" @click="addItemModal = false" class="text-sm text-gray-300 hover:text-white">Cancel</button>
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 px-4 py-2 text-sm rounded-lg text-white font-semibold">Add</button>
+                </div>
+            </form>
+        </div>
     </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>

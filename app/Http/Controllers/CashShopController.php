@@ -110,7 +110,7 @@ class CashShopController extends Controller
             ->orderBy('id')
             ->offset($offset)
             ->limit($perPage)
-            ->get(['id', 'AegisName', 'price']);
+            ->get(['id', 'aegisname', 'price']);
 
         return response()->json([
             'items' => $items,
