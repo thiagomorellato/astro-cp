@@ -26,7 +26,7 @@ class CashShopController extends Controller
         }
 
         // Lê o CSV
-        $csvPath = storage_path('app/items.csv');
+        $csvPath = resource_path('csv/items.csv');
         $items = [];
 
         if (file_exists($csvPath)) {
