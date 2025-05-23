@@ -172,4 +172,45 @@ public function exportYaml()
 
     return response()->download($path)->deleteFileAfterSend();
 }
+public function addItems(Request $request)
+{
+    $userid = Session::get('astrocp_user.userid');
+    if (!$userid) {
+        return redirect('/login');
+    }
+
+    $groupId = DB::connection('ragnarok')->table('login')
+        ->where('userid', $userid)
+        ->value('group_id');
+
+    if ($groupId != 99) {
+        return redirect('/user');
+    }
+
+    $tab = $request->input('tab');
+    $raw = $request->input('bulk_items');
+    $pairs = explode(',', $raw);
+
+    $inserted = 0;
+    foreach ($pairs as $pair) {
+        [$id, $price] = explode(':', trim($pair));
+
+        $aegis = DB::connection('ragnarok')
+            ->table('items_cash_db')
+            ->where('Id', (int)$id)
+            ->value('AegisName');
+
+        if ($aegis) {
+            DB::connection('ragnarok')->table('cash_shop')->insert([
+                'id' => (int)$id,
+                'tab' => $tab,
+                'AegisName' => $aegis,
+                'price' => (int)$price,
+            ]);
+            $inserted++;
+        }
+    }
+
+    return redirect()->route('cash.shop')->with('success', "$inserted items added to $tab tab.");
+}
 }
