@@ -7,8 +7,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Dumper;
-use phpseclib3\Net\SFTP;
-use phpseclib3\Crypt\PublicKeyLoader;
 
 class CashShopController extends Controller
 {
@@ -155,7 +153,6 @@ public function exportYaml()
         ];
     }
 
-    // Gera o YAML
     $yamlString = "Header:\n";
     $yamlString .= "  Type: ITEM_CASH_DB\n";
     $yamlString .= "  Version: 1\n";
@@ -170,28 +167,10 @@ public function exportYaml()
         }
     }
 
-    // Salva localmente
-    $localPath = base_path('item_cash.yml');
-    file_put_contents($localPath, $yamlString);
+    $path = base_path('item_cash.yml');
+    file_put_contents($path, $yamlString);
 
-    // Envia via SSH
-    $privateKeyPath = '/etc/secrets/id_ed25519'; // Caminho onde o Render monta o secret file
-    $privateKey = PublicKeyLoader::loadPrivateKey(file_get_contents($privateKeyPath));
-
-    $sftp = new SFTP('ip-do-servidor'); // Coloque o IP ou hostname do seu servidor
-    if (!$sftp->login('root', $privateKey)) {
-        return response()->json(['error' => 'SSH login failed'], 500);
-    }
-
-    // Envia o arquivo
-    $remotePath = '/root/astroremote/db/import/item_cash.yml';
-    $uploadSuccess = $sftp->put($remotePath, $yamlString);
-
-    if (!$uploadSuccess) {
-        return response()->json(['error' => 'Failed to upload item_cash.yml to remote server'], 500);
-    }
-
-    return response()->json(['message' => 'item_cash.yml exported and uploaded successfully.']);
+    return response()->download($path)->deleteFileAfterSend();
 }
 public function addItems(Request $request)
 {
