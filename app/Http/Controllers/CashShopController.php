@@ -121,57 +121,118 @@ class CashShopController extends Controller
             'tab' => $tab,
         ]);
     }
-public function exportYaml()
-{
-    $tabs = DB::connection('ragnarok')
-        ->table('cash_shop')
-        ->distinct()
-        ->pluck('tab');
+ public function exportYaml()
+    {
+        // Autenticação e Autorização (mantenha como está)
+        $userid = Session::get('astrocp_user.userid');
+        if (!$userid) {
+            // Poderia retornar um erro JSON se for uma chamada AJAX, ou redirecionar
+            return redirect('/login')->with('error', 'Unauthorized access.');
+        }
+        $groupId = DB::connection('ragnarok')->table('login')
+            ->where('userid', $userid)
+            ->value('group_id');
+        if ($groupId != 99) {
+            // Poderia retornar um erro JSON
+            return redirect('/user')->with('error', 'Forbidden access.');
+        }
 
-    $body = [];
-
-    foreach ($tabs as $tab) {
-        $items = DB::connection('ragnarok')
+        $tabs = DB::connection('ragnarok')
             ->table('cash_shop')
-            ->where('tab', $tab)
-            ->get();
+            ->distinct()
+            ->pluck('tab');
 
-        $itemsArray = [];
+        $body = [];
+        foreach ($tabs as $tab) {
+            $items = DB::connection('ragnarok')
+                ->table('cash_shop')
+                ->where('tab', $tab)
+                ->get();
 
-        foreach ($items as $item) {
-            if (!empty($item->AegisName) && $item->price > 0) {
-                $itemsArray[] = [
-                    'Item' => $item->AegisName,
-                    'Price' => (int) $item->price,
+            $itemsArray = [];
+            foreach ($items as $item) {
+                if (!empty($item->AegisName) && $item->price > 0) {
+                    $itemsArray[] = [
+                        'Item' => $item->AegisName,
+                        'Price' => (int) $item->price,
+                    ];
+                }
+            }
+
+            if (!empty($itemsArray)) { // Só adiciona a tab se tiver itens
+                $body[] = [
+                    'Tab' => $tab,
+                    'Items' => $itemsArray,
                 ];
             }
         }
 
-        $body[] = [
-            'Tab' => $tab,
-            'Items' => $itemsArray,
-        ];
-    }
-
-    $yamlString = "Header:\n";
-    $yamlString .= "  Type: ITEM_CASH_DB\n";
-    $yamlString .= "  Version: 1\n";
-    $yamlString .= "Body:\n";
-
-    foreach ($body as $entry) {
-        $yamlString .= "  - Tab: {$entry['Tab']}\n";
-        $yamlString .= "    Items:\n";
-        foreach ($entry['Items'] as $item) {
-            $yamlString .= "      - Item: {$item['Item']}\n";
-            $yamlString .= "        Price: {$item['Price']}\n";
+        if (empty($body)) {
+            return back()->with('warning', 'No items found to export.');
         }
+
+        $yamlString = "Header:\n";
+        $yamlString .= "  Type: ITEM_CASH_DB\n";
+        $yamlString .= "  Version: 1\n";
+        $yamlString .= "Body:\n";
+
+        foreach ($body as $entry) {
+            $yamlString .= "  - Tab: {$entry['Tab']}\n";
+            $yamlString .= "    Items:\n";
+            foreach ($entry['Items'] as $item) {
+                $yamlString .= "      - Item: {$item['Item']}\n";
+                $yamlString .= "        Price: {$item['Price']}\n";
+            }
+        }
+
+        // --- Salvar YAML e enviar via SCP ---
+        $localTempPath = storage_path('app/item_cash_temp.yml'); // Salva temporariamente no storage do Laravel
+        file_put_contents($localTempPath, $yamlString);
+
+        // Configurações para SSH/SCP
+        $sshUser = 'root'; // Usuário SSH no servidor remoto
+        $sshHost = '159.203.42.146'; // IP ou hostname do servidor remoto
+        
+        // !!! IMPORTANTE: Defina o caminho completo onde o arquivo deve ser salvo no servidor REMOTO !!!
+        // Exemplo: '/home/usuario_remoto/ragnarok/conf/item_cash.yml'
+        // Exemplo: '/opt/gameserver/ragnarok/db/item_cash.yml'
+        $remotePath = '/root/astroremote/db/import/item_cash.yml'; // MUDE ISSO!
+
+        $sshKeyPath = '/var/www/.ssh/id_ed25519_scp'; // Caminho para a chave privada de www-data dentro do container
+
+        // Comando SCP
+        // -i: especifica a chave de identidade (privada)
+        // -o StrictHostKeyChecking=no: não pergunta sobre a autenticidade do host
+        // -o UserKnownHostsFile=/dev/null: não usa nem atualiza o known_hosts (cuidado em ambientes produtivos sem controle)
+        $scpCommand = [
+            'scp',
+            '-i', $sshKeyPath,
+            '-o', 'StrictHostKeyChecking=no',
+            '-o', 'UserKnownHostsFile=/dev/null',
+            $localTempPath, // Arquivo local
+            sprintf('%s@%s:%s', $sshUser, $sshHost, $remotePath) // Destino remoto: user@host:path
+        ];
+
+        $process = new Process($scpCommand);
+        
+        try {
+            $process->mustRun(); // Executa o comando; lança exceção em caso de erro
+
+            unlink($localTempPath); // Remove o arquivo temporário local após o envio
+
+            return redirect()->route('cash.shop')->with('success', 'Arquivo YAML exportado e enviado para o servidor com sucesso!');
+        
+        } catch (ProcessFailedException $exception) {
+            // Limpa o arquivo temporário mesmo em caso de falha, se existir
+            if (file_exists($localTempPath)) {
+                unlink($localTempPath);
+            }
+            
+            // Logar o erro é uma boa prática: \Log::error($exception->getMessage());
+            return back()->with('error', 'Falha ao enviar o arquivo YAML para o servidor: ' . $exception->getMessage());
+        }
+        // --- Fim da seção SCP ---
     }
-
-    $path = base_path('item_cash.yml');
-    file_put_contents($path, $yamlString);
-
-    return response()->download($path)->deleteFileAfterSend();
-}
 public function addItems(Request $request)
 {
     $userid = Session::get('astrocp_user.userid');
