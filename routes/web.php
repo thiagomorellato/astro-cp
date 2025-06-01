@@ -86,3 +86,5 @@ Route::post('/cash-shop/import', [CashShopController::class, 'import'])->name('c
 Route::get('/cash-shop/items', [CashShopController::class, 'showItemsByTab'])->name('cash.shop.items');
 Route::get('/cash-shop/export-yaml', [CashShopController::class, 'exportYaml'])->name('cash.shop.exportYaml');
 Route::post('/cash-shop/add-items', [CashShopController::class, 'addItems'])->name('cash.shop.addItems');
+Route::delete('/cash-shop/item/{itemId}', [CashShopController::class, 'destroyItem'])->name('cash.shop.destroyItem');
+Route::delete('/cash-shop/tab/{tabName}', [CashShopController::class, 'clearTabItems'])->name('cash.shop.clearTabItems');
