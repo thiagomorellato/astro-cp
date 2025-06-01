@@ -52,22 +52,11 @@
             </template>
 
             <template x-for="item in items" :key="item.id">
-                <div class="bg-white/10 p-4 rounded-lg border border-white/10 relative">
-    <button
-        class="absolute top-1 right-1 text-red-500 hover:text-red-600"
-        @click="confirmDelete(item.id)"
-        title="Delete"
-    >
-        🗑️
-    </button>
-
-    <div class="text-center">
-        <div class="font-bold mb-1" x-text="item.aegisname"></div>
-        <div class="text-sm">ID: <span x-text="item.id"></span></div>
-        <div class="text-sm">Price: <span x-text="item.price"></span></div>
-    </div>
-</div>
-
+                <div class="bg-white/10 p-4 rounded-lg text-center border border-white/10">
+                    <div class="font-bold mb-1" x-text="item.aegisname"></div>
+                    <div class="text-sm">ID: <span x-text="item.id"></span></div>
+                    <div class="text-sm">Price: <span x-text="item.price"></span></div>
+                </div>
             </template>
         </div>
 
@@ -126,29 +115,6 @@
     </div>
 
 </div>
-<!-- Modal de Confirmação de Exclusão -->
-<div
-    x-show="deleteItemId !== null"
-    x-transition
-    class="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
-    x-cloak
->
-    <div class="bg-gray-900 text-white rounded-xl p-6 w-full max-w-md border border-white/20 shadow-xl space-y-4">
-        <h3 class="text-lg font-bold text-red-500">Delete Item</h3>
-        <p class="text-sm text-gray-300">Are you sure you want to delete item ID <span x-text="deleteItemId"></span> from the Cash Shop?</p>
-
-        <div class="flex justify-end gap-2">
-            <button type="button" @click="deleteItemId = null" class="text-sm text-gray-300 hover:text-white">Cancel</button>
-            <button 
-                @click="deleteItem()" 
-                class="bg-red-600 hover:bg-red-700 px-4 py-2 text-sm rounded-lg text-white font-semibold"
-            >
-                Delete
-            </button>
-        </div>
-    </div>
-</div>
-
 
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 <script>
@@ -200,33 +166,6 @@ function cashShop() {
                 this.fetchItems();
             }
         }
-        deleteItemId: null,
-confirmDelete(id) {
-    this.deleteItemId = id;
-},
-deleteItem() {
-    if (!this.deleteItemId) return;
-
-    fetch(`/cash-shop/item/${this.deleteItemId}`, {
-        method: 'DELETE',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json'
-        }
-    })
-    .then(res => {
-        if (res.ok) {
-            this.fetchItems();
-        } else {
-            alert('Failed to delete item.');
-        }
-        this.deleteItemId = null;
-    })
-    .catch(() => {
-        alert('Error deleting item.');
-        this.deleteItemId = null;
-    });
-},
     }
 }
 </script>
