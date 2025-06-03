@@ -30,7 +30,6 @@
     </div>
 @endif
 
-{{-- Bloco para exibir erros de validação dos formulários --}}
 @if ($errors->any())
     <div
         x-data="{ show: true }" 
@@ -38,7 +37,6 @@
         x-transition:enter="transition ease-out duration-500"
         x-transition:enter-start="opacity-0 scale-95"
         x-transition:enter-end="opacity-100 scale-100"
-        {{-- x-init="setTimeout(() => show = false, 8000)" --}} {{-- Erros devem permanecer visíveis até o usuário agir --}}
         class="bg-red-700/90 text-white px-4 py-3 rounded-xl max-w-md mx-auto mb-4 shadow-lg border border-red-400/40 backdrop-blur"
     >
         <div class="text-sm text-center">
@@ -102,8 +100,9 @@
                 @if($isVip)
                     <span class="text-green-400 font-bold px-2 py-1 bg-green-500/20 rounded-md">Active</span>
                 @else
-                    <button onclick="openVipModal()" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-semibold py-1.5 px-3 rounded-md transition">
-                        Subscribe to VIP
+                    {{-- Botão VIP original que você tinha --}}
+                    <button onclick="openVipModal()" class="bg-gray-500 hover:bg-yellow-500 text-white text-xs py-2 w-1/2 rounded"> 
+                        Subscribe
                     </button>
                 @endif
             </div>
@@ -173,7 +172,7 @@
     {{-- Delete Confirmation Modal --}}
     <div 
         x-show="confirmDelete" x-transition
-        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+        class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
         @click.self="confirmDelete = false" x-cloak
     >
         <div class="bg-gray-900 text-white rounded-xl p-6 w-full max-w-md border border-white/20 shadow-xl" @click.stop>
@@ -200,7 +199,7 @@
     {{-- Reset Position Modal --}}
     <div 
         x-show="confirmReset" x-transition
-        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+        class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
         @click.self="confirmReset = false" x-cloak
     >
         <div class="bg-gray-900 text-white rounded-xl p-6 w-full max-w-md border border-white/20 shadow-xl" @click.stop>
@@ -222,7 +221,7 @@
     {{-- Reset Look Modal --}}
     <div 
         x-show="confirmLook" x-transition
-        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+        class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
         @click.self="confirmLook = false" x-cloak
     >
         <div class="bg-gray-900 text-white rounded-xl p-6 w-full max-w-md border border-white/20 shadow-xl" @click.stop>
@@ -241,42 +240,42 @@
         </div>
     </div>
     
-    {{-- Vip Modal --}}
+    {{-- VIP MODAL - REVERTIDO AO SEU ORIGINAL --}}
     <div 
-        id="vipModal" x-transition
-        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden p-4" {{-- Mantendo 'hidden' para controle via JS legado --}}
-        @click.self="closeVipModal()" x-cloak 
+        id="vipModal" 
+        x-transition {{-- x-transition pode não ter efeito com manipulação de classe 'hidden' --}}
+        class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 hidden"
+        x-cloak
     >
-        <div class="bg-gray-900 text-white rounded-xl p-6 w-full max-w-md border border-white/20 shadow-xl" @click.stop>
-            <h3 class="text-lg font-bold text-yellow-500 mb-2">Subscribe to VIP</h3>
-            <p class="text-sm text-gray-300 mb-4">
+        <div class="bg-gray-900 text-white rounded-xl p-6 w-full max-w-sm border border-white/20 shadow-xl space-y-4">
+            <h3 class="text-lg font-bold text-yellow-500">Subscribe to VIP</h3>
+            <p class="text-sm text-gray-300">
                 Subscribe for <span class="font-semibold text-white">$10 USD</span> per month to unlock VIP status and benefits.
             </p>
-            <div class="space-y-4">
-                <div>
-                    <label for="paypalEmail" class="text-sm block text-gray-300 mb-1">Enter your PayPal email:</label>
-                    <input 
-                        type="email" 
-                        id="paypalEmail" 
-                        placeholder="your.paypal@example.com"
-                        required 
-                        class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/70 focus:border-yellow-500/0"
-                    >
-                </div>
-                <div class="flex justify-end gap-3 pt-2">
-                    <button type="button" onclick="closeVipModal()" class="text-sm text-gray-400 hover:text-white px-4 py-2 rounded-lg hover:bg-gray-700/60 transition">Cancel</button>
-                    <button 
-                        onclick="startVipSubscription()" 
-                        class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 text-sm rounded-lg text-white font-semibold transition"
-                    >
-                        Subscribe with PayPal
-                    </button>
-                </div>
+            
+            <div>
+                <label for="paypalEmail" class="text-sm block text-gray-300 mb-1">Enter your PayPal email:</label>
+                <input 
+                    type="email" 
+                    id="paypalEmail" 
+                    required 
+                    class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring focus:ring-yellow-500"
+                >
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeVipModal()" class="text-sm text-gray-300 hover:text-white">Cancel</button>
+                <button 
+                    onclick="startVipSubscription()" 
+                    class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 text-sm rounded-lg text-white font-semibold"
+                >
+                    Subscribe
+                </button>
             </div>
         </div>
     </div>
 
-    {{-- MODAIS NOVOS --}}
+    {{-- MODAIS NOVOS PARA SENHA E EMAIL --}}
     {{-- Change Password Modal --}}
     <div 
         x-show="changePasswordModalOpen"
@@ -286,28 +285,28 @@
         x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
         x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-        class="fixed inset-0 bg-black/70 flex items-center justify-center z-[51] p-4" {{-- z-index maior para sobrepor outros se houver --}}
+        class="fixed inset-0 bg-black/70 flex items-center justify-center z-[51] p-4"
         @keydown.escape.window="changePasswordModalOpen = false"
         @click.self="changePasswordModalOpen = false" x-cloak
     >
         <div class="bg-gray-900 text-white rounded-xl p-6 w-full max-w-md border border-white/20 shadow-xl" @click.stop>
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-bold text-yellow-500">Change Password</h3>
-                <button @click="changePasswordModalOpen = false" class="text-gray-400 hover:text-gray-200">&times;</button>
+                <button @click="changePasswordModalOpen = false" class="text-gray-400 hover:text-gray-200 text-2xl leading-none">&times;</button>
             </div>
             <form method="POST" action="{{ route('account.changePassword') }}" class="space-y-4">
                 @csrf
                 <div>
                     <label for="current_password_cp" class="text-sm block text-gray-300 mb-1">Current Password:</label>
-                    <input id="current_password_cp" type="password" name="current_password" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/70 focus:border-yellow-500/0" autocomplete="current-password">
+                    <input id="current_password_cp" type="password" name="current_password" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/70 focus:border-transparent" autocomplete="current-password">
                 </div>
                 <div>
                     <label for="new_password_cp" class="text-sm block text-gray-300 mb-1">New Password:</label>
-                    <input id="new_password_cp" type="password" name="new_password" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/70 focus:border-yellow-500/0" autocomplete="new-password">
+                    <input id="new_password_cp" type="password" name="new_password" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/70 focus:border-transparent" autocomplete="new-password">
                 </div>
                 <div>
                     <label for="new_password_confirmation_cp" class="text-sm block text-gray-300 mb-1">Confirm New Password:</label>
-                    <input id="new_password_confirmation_cp" type="password" name="new_password_confirmation" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/70 focus:border-yellow-500/0" autocomplete="new-password">
+                    <input id="new_password_confirmation_cp" type="password" name="new_password_confirmation" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/70 focus:border-transparent" autocomplete="new-password">
                 </div>
                 <div class="flex justify-end gap-3 pt-2">
                     <button type="button" @click="changePasswordModalOpen = false" class="text-sm text-gray-400 hover:text-white px-4 py-2 rounded-lg hover:bg-gray-700/60 transition">Cancel</button>
@@ -333,17 +332,17 @@
         <div class="bg-gray-900 text-white rounded-xl p-6 w-full max-w-md border border-white/20 shadow-xl" @click.stop>
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-bold text-yellow-500">Change E-mail</h3>
-                <button @click="changeEmailModalOpen = false" class="text-gray-400 hover:text-gray-200">&times;</button>
+                <button @click="changeEmailModalOpen = false" class="text-gray-400 hover:text-gray-200 text-2xl leading-none">&times;</button>
             </div>
             <form method="POST" action="{{ route('account.changeEmail') }}" class="space-y-4">
                 @csrf
                 <div>
                     <label for="current_password_ce" class="text-sm block text-gray-300 mb-1">Current Password:</label>
-                    <input id="current_password_ce" type="password" name="current_password" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/70 focus:border-yellow-500/0" autocomplete="current-password">
+                    <input id="current_password_ce" type="password" name="current_password" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/70 focus:border-transparent" autocomplete="current-password">
                 </div>
                 <div>
                     <label for="new_email_ce" class="text-sm block text-gray-300 mb-1">New E-mail:</label>
-                    <input id="new_email_ce" type="email" name="new_email" value="{{ old('new_email', $userData->email ?? '') }}" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/70 focus:border-yellow-500/0" autocomplete="email">
+                    <input id="new_email_ce" type="email" name="new_email" value="{{ old('new_email', $userData->email ?? '') }}" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/70 focus:border-transparent" autocomplete="email">
                 </div>
                 <div class="flex justify-end gap-3 pt-2">
                     <button type="button" @click="changeEmailModalOpen = false" class="text-sm text-gray-400 hover:text-white px-4 py-2 rounded-lg hover:bg-gray-700/60 transition">Cancel</button>
@@ -354,53 +353,31 @@
     </div>
 
 </div>
+{{-- SCRIPT DO PAYPAL REVERTIDO AO SEU ORIGINAL --}}
 <script>
-    // Suas funções openVipModal, closeVipModal, startVipSubscription existentes
     function openVipModal() {
-        const vipModal = document.getElementById('vipModal');
-        if (vipModal) {
-            vipModal.classList.remove('hidden');
-            vipModal.classList.add('flex'); // Para centralizar com items-center justify-center
-        }
+        document.getElementById('vipModal').classList.remove('hidden');
     }
     function closeVipModal() {
-        const vipModal = document.getElementById('vipModal');
-        if (vipModal) {
-            vipModal.classList.add('hidden');
-            vipModal.classList.remove('flex');
-        }
+        document.getElementById('vipModal').classList.add('hidden');
     }
     async function startVipSubscription() {
-        const emailInput = document.getElementById('paypalEmail');
-        const email = emailInput.value;
-
-        if (!email || !/^\S+@\S+\.\S+$/.test(email)) { // Validação simples de e-mail
-            alert('Please enter a valid PayPal email address.');
-            emailInput.focus();
-            return;
-        }
-        
-        try {
-            // Certifique-se que esta rota 'paypal.subscribe.create' está definida no seu web.php
-            const response = await fetch("{{ route('paypal.subscribe.create', [], false) }}", { 
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content') // Pega o token dinamicamente
-                },
-                body: JSON.stringify({ email })
-            });
-
-            const data = await response.json();
-
-            if (response.ok && data && data.approve_url) {
-                window.location.href = data.approve_url;
-            } else {
-                alert(data.message || "Failed to initiate PayPal subscription. Please try again.");
-            }
-        } catch (error) {
-            console.error("PayPal Subscription error:", error);
-            alert("An error occurred while trying to set up the subscription. Please check the console for details.");
+        const email = document.getElementById('paypalEmail').value;
+        // A rota abaixo deve existir e ser funcional no seu web.php
+        const response = await fetch("/paypal/subscribe/create", { 
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}" // Mantendo seu método original de pegar o token
+            },
+            body: JSON.stringify({ email })
+        });
+        const data = await response.json();
+        if (data && data.approve_url) {
+            window.location.href = data.approve_url;
+        } else {
+            // Você pode querer dar um feedback de erro mais específico aqui se 'data.message' existir
+            alert(data.message || "Failed to start subscription.");
         }
     }
 </script>
