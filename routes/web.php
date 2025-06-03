@@ -74,7 +74,8 @@ Route::get('/user', [UserController::class, 'index'])->name('user');
 Route::post('/char/delete', [UserController::class, 'deleteChar'])->name('char.delete');
 Route::post('/char/reset-position', [UserController::class, 'resetPosition'])->name('char.resetPosition');
 Route::post('/char/reset-look', [UserController::class, 'resetLook'])->name('char.resetLook');
-
+Route::post('/account/change-password', [UserController::class, 'updatePassword'])->name('account.changePassword');
+Route::post('/account/change-email', [UserController::class, 'updateEmail'])->name('account.changeEmail');
 
 Route::post('/paypal/subscribe/create', [PayPalSubscriptionController::class, 'create']);
 Route::post('/paypal/subscribe', [PayPalSubscriptionWebhookController::class, 'handle']);
