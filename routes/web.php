@@ -86,5 +86,7 @@ Route::post('/cash-shop/import', [CashShopController::class, 'import'])->name('c
 Route::get('/cash-shop/items', [CashShopController::class, 'showItemsByTab'])->name('cash.shop.items');
 Route::get('/cash-shop/export-yaml', [CashShopController::class, 'exportYaml'])->name('cash.shop.exportYaml');
 Route::post('/cash-shop/add-items', [CashShopController::class, 'addItems'])->name('cash.shop.addItems');
-Route::delete('/cash-shop/item/{itemId}', [CashShopController::class, 'destroyItem'])->name('cash.shop.destroyItem');
+// Rota de exclusão de item ajustada
+Route::delete('/cash-shop/item/{itemId}/tab/{tabName}', [CashShopController::class, 'destroyItemFromTab'])->name('cash.shop.destroyItemFromTab');
+// Rota para limpar todos os itens de uma aba (permanece a mesma)
 Route::delete('/cash-shop/tab/{tabName}', [CashShopController::class, 'clearTabItems'])->name('cash.shop.clearTabItems');
