@@ -188,7 +188,7 @@
 // <meta name="csrf-token" content="{{ csrf_token() }}">
 function cashShop() {
     return {
-        tabs: @json($tabs ?? ['New', 'Hot', 'Limited', 'Rental', 'Permanent', 'Scrolls', 'Consumables', 'Other', 'Sale']),
+        tabs: @json($tabs),
         activeTab: @json($tabs[0] ?? 'New'),
         items: [],
         currentPage: 1,
