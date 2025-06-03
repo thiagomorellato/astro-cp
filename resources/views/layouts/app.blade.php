@@ -17,7 +17,7 @@
     [x-cloak] { display: none !important; }
 </style>
 </head>
-<body class="flex flex-col min-h-screen bg-gray-900 text-white font-['Poppins']" style="background-image: url('{{ asset('images/background.jpg') }}'); background-size: 100% 100%; background-position: center; min-height: 100vh;">
+<body class="flex flex-col min-h-screen bg-gray-900 text-white font-['Poppins']" style="background-image: url('{{ asset('images/background.jpg') }}'); background-size: cover; background-position: center; background-attachment: fixed; min-height: 100vh;">
 
   <!-- Navbar -->
   <header class="fixed top-0 inset-x-0 z-50 bg-black/60 backdrop-blur-md shadow-md" x-data="{ mobileMenuOpen: false }">
