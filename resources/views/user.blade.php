@@ -87,42 +87,50 @@
     {{-- Account Tab --}}
     <div x-show="tab === 'account'" x-transition.opacity.duration.500ms>
         <div class="space-y-3 text-sm">
-            <div class="flex justify-between items-center p-2 rounded-md bg-black/10">
-                <span class="text-gray-300 font-semibold">Account ID:</span>
-                <span class="text-gray-100 font-mono">{{ $userData->userid ?? 'N/A' }}</span>
+            {{-- Account ID --}}
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-2 rounded-md bg-black/10">
+                <span class="text-gray-300 font-semibold sm:mr-3">Account ID:</span>
+                <span class="text-gray-100 font-mono mt-1 sm:mt-0 text-left sm:text-right w-full sm:w-auto">{{ $userData->userid ?? 'N/A' }}</span>
             </div>
-            <div class="flex justify-between items-center p-2 rounded-md bg-black/10">
-                <span class="text-gray-300 font-semibold">Registered E-mail:</span>
-                <span class="text-gray-100 font-mono">{{ $userData->email ?? 'N/A' }}</span>
+            {{-- Registered E-mail --}}
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-2 rounded-md bg-black/10">
+                <span class="text-gray-300 font-semibold sm:mr-3">Registered E-mail:</span>
+                <span class="text-gray-100 font-mono mt-1 sm:mt-0 text-left sm:text-right w-full sm:w-auto">{{ $userData->email ?? 'N/A' }}</span>
             </div>
-            <div class="flex justify-between items-center p-2 rounded-md bg-black/10">
+            {{-- VIP Status --}}
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-2 rounded-md bg-black/10">
                 <span class="text-gray-300 font-semibold">VIP Status:</span>
-                @if($isVip)
-                    <span class="text-green-400 font-bold px-2 py-1 bg-green-500/20 rounded-md">Active</span>
-                @else
-                    <button onclick="openVipModal()" class="bg-gray-500 hover:bg-yellow-500 text-white text-xs py-2 w-1/2 rounded"> 
-                        Subscribe
-                    </button>
-                @endif
+                <div class="mt-1 sm:mt-0 w-full sm:w-auto flex sm:justify-end">
+                    @if($isVip)
+                        <span class="text-green-400 font-bold px-2 py-1 bg-green-500/20 rounded-md w-full sm:w-auto text-center sm:text-left">Active</span>
+                    @else
+                        {{-- Mantendo seu botão original de VIP --}}
+                        <button onclick="openVipModal()" class="bg-gray-500 hover:bg-yellow-500 text-white text-xs py-2 rounded w-full sm:w-1/2"> 
+                            Subscribe
+                        </button>
+                    @endif
+                </div>
             </div>
 
             {{-- Account Management Options --}}
-            <div class="border-t border-white/10 pt-4 mt-5 space-y-2">
-                 <h3 class="text-md font-semibold text-yellow-400 mb-2">Account Management</h3>
-                <div class="flex justify-between items-center p-2 rounded-md hover:bg-white/5 transition">
-                    <span class="text-gray-300">Change Password</span>
+            <div class="border-t border-white/10 pt-4 mt-5 space-y-3 sm:space-y-2"> {{-- Ajustado space-y para mobile e desktop --}}
+                <h3 class="text-md font-semibold text-yellow-400 mb-2">Account Management</h3>
+                {{-- Change Password --}}
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-2 rounded-md hover:bg-white/5 transition">
+                    <span class="text-gray-300 mb-1 sm:mb-0">Change Password</span>
                     <button 
                         @click="changePasswordModalOpen = true"
-                        class="bg-gray-500 hover:bg-yellow-500 text-white text-xs py-2 w-1/2 rounded"
+                        class="bg-gray-500 hover:bg-yellow-500 text-white text-xs py-2 rounded w-full sm:w-1/2"
                     >
                         Change
                     </button>
                 </div>
-                <div class="flex justify-between items-center p-2 rounded-md hover:bg-white/5 transition">
-                    <span class="text-gray-300">Change E-mail</span>
+                {{-- Change E-mail --}}
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-2 rounded-md hover:bg-white/5 transition">
+                    <span class="text-gray-300 mb-1 sm:mb-0">Change E-mail</span>
                     <button 
                         @click="changeEmailModalOpen = true"
-                        class="bg-gray-500 hover:bg-yellow-500 text-white text-xs py-2 w-1/2 rounded"
+                        class="bg-gray-500 hover:bg-yellow-500 text-white text-xs py-2 rounded w-full sm:w-1/2"
                     >
                         Change
                     </button>
@@ -143,21 +151,21 @@
                         class="text-yellow-400 hover:text-yellow-300 transition-colors duration-150 p-1 hover:bg-white/10 rounded-md" 
                         title="Reset look (Default)"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H4zm7.293 1.293a1 1 0 00-1.414 0L8 5.086V5a1 1 0 00-2 0v.086L4.121 3.207a1 1 0 00-1.414 1.414L4.586 6.5A4.003 4.003 0 004 10c0 .399.058.786.17 1.158L2.707 12.586a1 1 0 101.414 1.414L6 12.121V12a1 1 0 002 0v-.121l1.879 1.879a1 1 0 001.414-1.414L9.414 10.5A4.003 4.003 0 0010 7c.399 0 .786.058 1.158.17L12.586 9h.006l.328-.328A5.943 5.943 0 0110 7c-1.643 0-3.107.673-4.158 1.757A5.963 5.963 0 0110 4.037c.512 0 1 .103 1.459.293l1.834-1.835a1 1 0 00-1.293-1.495zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></svg>
+                        🎭 {{-- Ícone revertido para a máscara --}}
                     </button>
                     <button 
                         @click="selectedChar = '{{ $char->name }}'; confirmReset = true;" 
                         class="text-blue-400 hover:text-blue-300 transition-colors duration-150 p-1 hover:bg-white/10 rounded-md" 
                         title="Reset position (Prontera)"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" /></svg>
+                        📍
                     </button>
                     <button 
                         @click="selectedChar = '{{ $char->name }}'; confirmDelete = true;" 
                         class="text-red-400 hover:text-red-300 transition-colors duration-150 p-1 hover:bg-white/10 rounded-md" 
                         title="Delete character"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                        🗑️
                     </button>
                 </div>
             </div>
@@ -185,7 +193,7 @@
                 <input type="hidden" name="char_name" :value="selectedChar">
                 <div>
                     <label for="delete_char_password" class="text-sm block text-gray-300 mb-1">Enter your account password:</label>
-                    <input id="delete_char_password" type="password" name="password" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/70 focus:border-yellow-500/0">
+                    <input id="delete_char_password" type="password" name="password" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/70 focus:border-transparent">
                 </div>
                 <div class="flex justify-end gap-3 mt-6">
                     <button type="button" @click="confirmDelete = false" class="text-sm text-gray-400 hover:text-white px-4 py-2 rounded-lg hover:bg-gray-700/60 transition">Cancel</button>
@@ -239,9 +247,10 @@
         </div>
     </div>
     
+    {{-- Vip Modal (mantendo seu original) --}}
     <div 
         id="vipModal" 
-        x-transition {{-- x-transition pode não ter efeito com manipulação de classe 'hidden' --}}
+        x-transition 
         class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 hidden"
         x-cloak
     >
@@ -250,7 +259,6 @@
             <p class="text-sm text-gray-300">
                 Subscribe for <span class="font-semibold text-white">$10 USD</span> per month to unlock VIP status and benefits.
             </p>
-            
             <div>
                 <label for="paypalEmail" class="text-sm block text-gray-300 mb-1">Enter your PayPal email:</label>
                 <input 
@@ -260,7 +268,6 @@
                     class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring focus:ring-yellow-500"
                 >
             </div>
-
             <div class="flex justify-end gap-2">
                 <button type="button" onclick="closeVipModal()" class="text-sm text-gray-300 hover:text-white">Cancel</button>
                 <button 
@@ -352,6 +359,7 @@
 
 </div>
 
+{{-- Script do VIP Modal (mantendo seu original) --}}
 <script>
     function openVipModal() {
         document.getElementById('vipModal').classList.remove('hidden');
@@ -366,7 +374,7 @@
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN": "{{ csrf_token() }}" // Mantendo seu método original de pegar o token
+                "X-CSRF-TOKEN": "{{ csrf_token() }}" 
             },
             body: JSON.stringify({ email })
         });
@@ -374,7 +382,6 @@
         if (data && data.approve_url) {
             window.location.href = data.approve_url;
         } else {
-            // Você pode querer dar um feedback de erro mais específico aqui se 'data.message' existir
             alert(data.message || "Failed to start subscription.");
         }
     }
