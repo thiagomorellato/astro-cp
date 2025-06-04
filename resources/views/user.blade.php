@@ -120,7 +120,7 @@
                     </button>
                 </div>
                 <div class="flex justify-between items-center p-2 rounded-md hover:bg-white/5 transition">
-                    <span class="text-gray-300">Change E-mail Address</span>
+                    <span class="text-gray-300">Change E-mail</span>
                     <button 
                         @click="changeEmailModalOpen = true"
                         class="text-sm text-yellow-400 hover:text-yellow-300 font-medium py-1 px-3 rounded-md border border-yellow-400/50 hover:border-yellow-300 transition"
@@ -240,7 +240,6 @@
         </div>
     </div>
     
-    {{-- VIP MODAL - REVERTIDO AO SEU ORIGINAL --}}
     <div 
         id="vipModal" 
         x-transition {{-- x-transition pode não ter efeito com manipulação de classe 'hidden' --}}
@@ -353,7 +352,7 @@
     </div>
 
 </div>
-{{-- SCRIPT DO PAYPAL REVERTIDO AO SEU ORIGINAL --}}
+
 <script>
     function openVipModal() {
         document.getElementById('vipModal').classList.remove('hidden');

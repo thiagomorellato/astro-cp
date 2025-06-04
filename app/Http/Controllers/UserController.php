@@ -238,15 +238,7 @@ public function updatePassword(Request $request)
                 'required',
                 'string',
                 'email',
-                'max:39', // Conforme seu AstrocpLoginController
-                // Verifica se o e-mail é único na tabela 'login', ignorando o registro do 'userid' atual.
-                // Isso permite que o usuário "re-salve" seu próprio e-mail se não o alterar,
-                // mas impede que ele use um e-mail que já pertence a OUTRO userid.
-                Rule::unique('ragnarok.login', 'email')->ignore($userid, 'userid')
             ],
-        ], [
-            // Mensagem customizada para o erro de e-mail único
-            'new_email.unique' => 'This email address is already in use by another account.'
         ]);
 
         // Verifica a senha atual
