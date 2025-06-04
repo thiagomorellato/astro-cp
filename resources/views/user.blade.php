@@ -100,7 +100,6 @@
                 @if($isVip)
                     <span class="text-green-400 font-bold px-2 py-1 bg-green-500/20 rounded-md">Active</span>
                 @else
-                    {{-- Botão VIP original que você tinha --}}
                     <button onclick="openVipModal()" class="bg-gray-500 hover:bg-yellow-500 text-white text-xs py-2 w-1/2 rounded"> 
                         Subscribe
                     </button>
@@ -114,7 +113,7 @@
                     <span class="text-gray-300">Change Password</span>
                     <button 
                         @click="changePasswordModalOpen = true"
-                        class="text-sm text-yellow-400 hover:text-yellow-300 font-medium py-1 px-3 rounded-md border border-yellow-400/50 hover:border-yellow-300 transition"
+                        class="bg-gray-500 hover:bg-yellow-500 text-white text-xs py-2 w-1/2 rounded"
                     >
                         Change
                     </button>
@@ -123,7 +122,7 @@
                     <span class="text-gray-300">Change E-mail</span>
                     <button 
                         @click="changeEmailModalOpen = true"
-                        class="text-sm text-yellow-400 hover:text-yellow-300 font-medium py-1 px-3 rounded-md border border-yellow-400/50 hover:border-yellow-300 transition"
+                        class="bg-gray-500 hover:bg-yellow-500 text-white text-xs py-2 w-1/2 rounded"
                     >
                         Change
                     </button>
