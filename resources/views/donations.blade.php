@@ -17,7 +17,7 @@
 
     <div class="flex flex-col justify-center mb-2 space-y-4 max-w-xs mx-auto">
         <!-- PayPal Button -->
-        <button @click="attemptDonate('paypal')"
+        <button id="donate-btn" @click="attemptDonate('paypal')"
             class="cursor-pointer bg-gray-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition w-full flex items-center justify-center gap-2">
             <svg id="donate-spinner" class="hidden animate-spin h-5 w-5 text-white"
                  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -36,10 +36,16 @@
             class="bg-gray-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition w-full text-center">
             Donate via PIX
         </button>
+
+        <!-- Crypto Button -->
+        <button @click="attemptDonate('crypto')" 
+            class="bg-gray-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition w-full text-center flex items-center justify-center gap-2">
+            <i class="fas fa-coins text-white text-lg"></i> Donate with Crypto
+        </button>
     </div>
 
     <p class="text-center text-xs text-gray-300 italic mb-4">
-        1 USD = 1000 SP
+        1 USD = 1000 SP — Crypto requires at least $20
     </p>
 
     <!-- Modal for login required -->
@@ -78,7 +84,7 @@
             isLoggedIn: @json(session()->has('astrocp_user')),
             showLoginModal: false,
             init() {
-                // Optional: intro animation or preload logic
+                // Optional: animation
             },
             attemptDonate(method) {
                 if (!this.isLoggedIn) {
@@ -99,9 +105,50 @@
                         window.location.href = "{{ route('donations.paypal') }}";
                     }, 500);
                 }
+
+                if (method === 'crypto') {
+                    const currency = prompt("Enter the cryptocurrency (e.g., BTC, ETH, USDT):");
+                    const amount = prompt("Enter the amount in USD (min $20):");
+
+                    if (!currency || !amount || isNaN(amount) || amount < 20) {
+                        alert("Invalid input. Please enter a valid crypto and amount >= $20.");
+                        return;
+                    }
+
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = "{{ route('donations.crypto') }}";
+
+                    const csrf = document.createElement('input');
+                    csrf.type = 'hidden';
+                    csrf.name = '_token';
+                    csrf.value = '{{ csrf_token() }}';
+                    form.appendChild(csrf);
+
+                    const currencyInput = document.createElement('input');
+                    currencyInput.type = 'hidden';
+                    currencyInput.name = 'pay_currency';
+                    currencyInput.value = currency.toUpperCase();
+                    form.appendChild(currencyInput);
+
+                    const amountInput = document.createElement('input');
+                    amountInput.type = 'hidden';
+                    amountInput.name = 'amount';
+                    amountInput.value = amount;
+                    form.appendChild(amountInput);
+
+                    const accountId = document.createElement('input');
+                    accountId.type = 'hidden';
+                    accountId.name = 'account_id';
+                    accountId.value = "{{ session('astrocp_user.userid') }}";
+                    form.appendChild(accountId);
+
+                    document.body.appendChild(form);
+                    form.submit();
+                }
             },
             redirectToLogin() {
-                window.location.href = "/account"; // ou qualquer rota de login do seu sistema
+                window.location.href = "/account";
             }
         }
     }

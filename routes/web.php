@@ -6,6 +6,7 @@ use App\Http\Controllers\PayPalController;
 use App\Http\Controllers\PayPalSubscriptionController;
 use App\Http\Controllers\PayPalSubscriptionWebhookController;
 use App\Http\Controllers\CashShopController;
+use App\Http\Controllers\NOWPaymentsController;
 
 Route::get('/', function () {
     return view('index');
@@ -91,3 +92,7 @@ Route::post('/cash-shop/add-items', [CashShopController::class, 'addItems'])->na
 Route::delete('/cash-shop/item/{itemId}/tab/{tabName}', [CashShopController::class, 'destroyItemFromTab'])->name('cash.shop.destroyItemFromTab');
 // Rota para limpar todos os itens de uma aba (permanece a mesma)
 Route::delete('/cash-shop/tab/{tabName}', [CashShopController::class, 'clearTabItems'])->name('cash.shop.clearTabItems');
+
+
+Route::post('/donate/crypto', [NOWPaymentsController::class, 'buy'])->name('nowpayments.buy');
+Route::post('/webhook/nowpayments', [NOWPaymentsController::class, 'webhook'])->name('nowpayments.webhook');
