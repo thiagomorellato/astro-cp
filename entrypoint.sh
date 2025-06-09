@@ -25,7 +25,7 @@ chmod 600 "$WWW_DATA_SSH_KEY_PATH"
 # Iniciar túnel com reconexão automática
 autossh -M 0 -N -i /root/.ssh/id_ed25519 \
 -o "ServerAliveInterval 60" -o "ServerAliveCountMax 3" \
--L 3307:127.0.0.1:3306 root@159.203.42.146 &
+-L 3307:127.0.0.1:3306 root@159.203.15.99 &
 
 # Iniciar Apache
 exec apache2-foreground
