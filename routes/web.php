@@ -94,5 +94,6 @@ Route::delete('/cash-shop/item/{itemId}/tab/{tabName}', [CashShopController::cla
 Route::delete('/cash-shop/tab/{tabName}', [CashShopController::class, 'clearTabItems'])->name('cash.shop.clearTabItems');
 
 
-Route::post('/donations/crypto', [NOWPaymentsController::class, 'createDonation'])->name('donations.crypto');
+Route::get('/donation/crypto', [NOWPaymentsController::class, 'showCryptoForm'])->name('donations.crypto.form');
+Route::post('/donation/crypto', [NOWPaymentsController::class, 'createDonation'])->name('nowpayments.buy');
 Route::post('/webhook/nowpayments', [NOWPaymentsController::class, 'webhook'])->name('nowpayments.webhook');

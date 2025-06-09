@@ -9,14 +9,16 @@ use Illuminate\Support\Facades\DB;
 
 class NOWPaymentsController extends Controller
 {
-    /**
-     * Cria uma fatura de doação via NOWPayments.
-     */
+    public function showCryptoForm()
+    {
+        return view('donations.crypto');
+    }
+
     public function createDonation(Request $request)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:20', // mínimo de 20 USD
-            'pay_currency' => 'required|string',   // exemplo: BTC, ETH, USDT
+            'amount' => 'required|numeric|min:20',
+            'pay_currency' => 'required|string',
             'account_id' => 'required|string',
         ]);
 
@@ -49,9 +51,6 @@ class NOWPaymentsController extends Controller
         ], 500);
     }
 
-    /**
-     * Webhook que trata as notificações da NOWPayments.
-     */
     public function webhook(Request $request)
     {
         $data = $request->all();
@@ -62,9 +61,8 @@ class NOWPaymentsController extends Controller
             $orderId = $data['order_id'] ?? '';
             $accountId = str_replace('astro-', '', $orderId);
             $usdAmount = floatval($data['price_amount'] ?? 0);
-            $scAmount = intval($usdAmount * 1000); // 1 USD = 1000 SC
+            $scAmount = intval($usdAmount * 1000);
 
-            // Adiciona os SC à conta do jogador
             DB::table('login')->where('userid', $accountId)->increment('cash_points', $scAmount);
 
             Log::info("NOWPayments: Donation confirmed. Account: {$accountId}, Amount: \${$usdAmount}, SC: {$scAmount}");
