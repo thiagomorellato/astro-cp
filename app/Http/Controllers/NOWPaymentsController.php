@@ -78,7 +78,7 @@ class NOWPaymentsController extends Controller
 
         // 6. SALVAR DOAÇÃO COMO "PENDING" (Igual ao PayPalController, feito APÓS a chamada da API)
         // Agora inserimos tudo de uma vez, de forma mais eficiente.
-        DB::table('donations_np')->insert([
+        DB::connection('ragnarok')->table('donations_np')->insert([
             'account_id' => $accountId,
             'amount_usd' => $amount,
             'status' => 'pending',
@@ -117,7 +117,7 @@ class NOWPaymentsController extends Controller
                 return response()->json(['error' => 'Missing payment ID'], 400);
             }
 
-            $donation = DB::table('donations_np')
+            $donation = DB::connection('ragnarok')->table('donations_np')
                 ->where('nowpayments_payment_id', $paymentId)
                 ->first();
 
@@ -139,7 +139,7 @@ class NOWPaymentsController extends Controller
             $this->addCreditsToAccount($accountId, $credits);
 
          
-            DB::table('donations_np')->where('id', $donation->id)->update([
+            DB::connection('ragnarok')->table('donations_np')->where('id', $donation->id)->update([
                 'status' => 'success',
                 'credits' => $credits, 
                 'updated_at' => now(),
