@@ -18,80 +18,88 @@ class NOWPaymentsController extends Controller
     }
 
     /**
-     * Passo 1: Cria a fatura de doação na NOWPayments.
-     * Esta função agora cria um registro local ANTES de contatar a API.
+     * Passo 1: Cria a fatura na NOWPayments.
+     * Lógica REFEITA para seguir o padrão do seu PayPalController.
      */
     public function createDonation(Request $request)
     {
-        $request->validate([
-            'amount' => 'required|numeric|min:5', // Valor mínimo de 5 USD, por exemplo
-            'pay_currency' => 'required|string',
-            'account_id' => 'required|integer|exists:ragnarok.login,account_id', // Valida se a conta existe
-        ]);
+        // 1. VERIFICAÇÃO DE SESSÃO (Igual ao PayPalController)
+        $userid = session('astrocp_user.userid');
+        if (!$userid) {
+            // Usando as mesmas rotas de redirecionamento do seu PayPal
+            return redirect('/donations/payment-failed')->with('error', 'User session expired. Please log in again.');
+        }
 
-        $amount = $request->input('amount');
-        $accountId = $request->input('account_id');
+        // 2. BUSCA DO ACCOUNT_ID (Igual ao PayPalController)
+        $user = DB::connection('ragnarok')->table('login')->where('userid', $userid)->first();
+        if (!$user || !isset($user->account_id)) {
+            return redirect('/donations/payment-failed')->with('error', 'Unable to find account information.');
+        }
+        $accountId = $user->account_id;
 
-        // 1. Crie um registro local na sua tabela para rastrear a doação.
-        // A "fonte da verdade" agora é o seu banco de dados.
-        $donationId = DB::table('donations_np')->insertGetId([
-            'account_id' => $accountId,
-            'amount_usd' => $amount,
-            'status' => 'pending',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-        
-        // 2. Crie um Order ID único para enviar à NOWPayments.
-        $orderId = 'astro-' . $donationId;
+        // 3. Obtenção dos dados do formulário (agora que sabemos que o usuário é válido)
+        // Removido o Request::validate para usar o fluxo manual
+        $amount = number_format((float) $request->input('amount', 20.00), 2, '.', '');
+        $payCurrency = $request->input('pay_currency');
 
-        // Atualiza o registro com o order_id gerado
-        DB::table('donations_np')->where('id', $donationId)->update(['order_id' => $orderId]);
-        
-        // 3. Chame a API da NOWPayments para criar a fatura.
+        if (empty($payCurrency)) {
+            return back()->with('error', 'Please select a cryptocurrency.');
+        }
+
+        // 4. CHAMADA À API DA NOWPAYMENTS (Lógica mantida)
         $response = Http::withHeaders([
             'x-api-key' => config('services.nowpayments.key'),
         ])->post(config('services.nowpayments.url') . '/invoice', [
             'price_amount'     => $amount,
             'price_currency'   => 'usd',
-            'pay_currency'     => $request->input('pay_currency'),
-            'order_id'         => $orderId, // Nosso ID único
+            'pay_currency'     => $payCurrency,
             'ipn_callback_url' => route('nowpayments.webhook'),
-            'success_url'      => url('/donation/success'),
-            'cancel_url'       => url('/donation/cancel'),
+            'success_url'      => url('/donation/success'), // Rota de sucesso genérica
+            'cancel_url'       => url('/donation/cancel'),   // Rota de cancelamento genérica
         ]);
 
-        // 4. Verifique a resposta da API.
-        if ($response->successful()) {
-            $paymentData = $response->json();
-            
-            // 5. Salve o ID de pagamento da NOWPayments no nosso registro local.
-            // Isso é crucial para vincular o webhook à doação correta.
-            DB::table('donations_np')->where('id', $donationId)->update([
-                'nowpayments_payment_id' => $paymentData['id'] ?? null,
+        // 5. TRATAMENTO DE FALHA NA API (Igual ao PayPalController)
+        if ($response->failed()) {
+            Log::error('Falha ao criar fatura na NOWPayments', [
+                'account_id' => $accountId,
+                'response' => $response->body(),
             ]);
-
-            Log::info("Fatura NOWPayments criada com sucesso para a doação ID: {$donationId}");
-            return redirect()->away($paymentData['invoice_url']);
+            return redirect('/donations/payment-failed')->with('error', 'Failed to create payment invoice with our provider.');
         }
 
-        // Se a API falhar, marque a doação como 'failed' e registre o erro.
-        DB::table('donations_np')->where('id', $donationId)->update(['status' => 'failed']);
-        Log::error('Falha ao criar fatura na NOWPayments', [
-            'donation_id' => $donationId,
-            'response' => $response->body(),
+        $paymentData = $response->json();
+        $invoiceUrl = $paymentData['invoice_url'] ?? null;
+        $paymentId = $paymentData['id'] ?? null;
+        $orderId = 'astro-np-' . $paymentId; // Criando um order_id único com o payment_id
+
+        if (!$invoiceUrl || !$paymentId) {
+            return redirect('/donations/payment-failed')->with('error', 'Invalid response from payment provider.');
+        }
+
+        // 6. SALVAR DOAÇÃO COMO "PENDING" (Igual ao PayPalController, feito APÓS a chamada da API)
+        // Agora inserimos tudo de uma vez, de forma mais eficiente.
+        DB::table('donations_np')->insert([
+            'account_id' => $accountId,
+            'amount_usd' => $amount,
+            'status' => 'pending',
+            'order_id' => $orderId,
+            'nowpayments_payment_id' => $paymentId,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
-        return back()->with('error', 'Não foi possível criar a fatura de pagamento. Tente novamente mais tarde.');
+        Log::info("Fatura NOWPayments criada com sucesso. Payment ID: {$paymentId}, Account ID: {$accountId}");
+
+        // 7. REDIRECIONAR O USUÁRIO (Igual ao PayPalController)
+        return redirect()->away($invoiceUrl);
     }
 
     /**
      * Passo 2: Recebe e processa o webhook da NOWPayments.
-     * Esta função foi completamente reescrita para ser segura e idempotente.
+     * Função já estava boa, apenas uma pequena correção.
      */
     public function webhook(Request $request)
     {
-        // 1. VERIFICAÇÃO DE SEGURANÇA: Validar a assinatura do webhook (CRÍTICO!)
         $signature = $request->header('x-nowpayments-sig');
         $ipnSecret = config('services.nowpayments.ipn_secret');
 
@@ -103,16 +111,12 @@ class NOWPaymentsController extends Controller
         $data = $request->all();
         Log::info('Webhook da NOWPayments recebido e validado', $data);
 
-        // 2. Processe apenas os eventos de pagamento que nos interessam ('finished')
         if (($data['payment_status'] ?? null) === 'finished') {
             $paymentId = $data['payment_id'] ?? null;
-
             if (!$paymentId) {
-                Log::warning('Webhook da NOWPayments sem payment_id.');
                 return response()->json(['error' => 'Missing payment ID'], 400);
             }
 
-            // 3. Encontre a doação no SEU banco de dados usando o ID do pagamento.
             $donation = DB::table('donations_np')
                 ->where('nowpayments_payment_id', $paymentId)
                 ->first();
@@ -122,30 +126,26 @@ class NOWPaymentsController extends Controller
                 return response()->json(['error' => 'Donation not found'], 404);
             }
 
-            // 4. VERIFICAÇÃO DE IDEMPOTÊNCIA: Garante que não processemos o mesmo evento duas vezes.
             if ($donation->status === 'success') {
                 Log::info("Webhook para a doação {$donation->id} já foi processado.");
                 return response()->json(['message' => 'Event already processed'], 200);
             }
 
-            // 5. Use os dados do SEU banco de dados como fonte da verdade.
             $accountId = $donation->account_id;
-            $usdAmount = $donation->amount_usd; // Usamos o valor que salvamos
-            $conversionRate = config('services.paypal.conversion_rate', 1000); // Reutilize a config
+            $usdAmount = $donation->amount_usd;
+            $conversionRate = config('services.paypal.conversion_rate', 1000);
             $credits = (int) floor(floatval($usdAmount) * $conversionRate);
 
-            // 6. Credite a conta do usuário usando uma função encapsulada (mesma lógica do PayPal).
             $this->addCreditsToAccount($accountId, $credits);
 
-            // 7. Atualize o status da doação no seu banco de dados para 'success'.
+         
             DB::table('donations_np')->where('id', $donation->id)->update([
                 'status' => 'success',
-                'credits' => $credits,
+                'credits' => $credits, 
                 'updated_at' => now(),
             ]);
 
             Log::info("Doação via NOWPayments processada: Doação ID {$donation->id}, Conta {$accountId}, USD {$usdAmount}, Créditos {$credits}");
-
             return response()->json(['message' => 'Payment processed successfully']);
         }
 
@@ -153,24 +153,19 @@ class NOWPaymentsController extends Controller
     }
 
     /**
-     * Valida a assinatura do webhook usando a chave secreta de IPN.
+     * Valida a assinatura do webhook.
      */
     private function validateWebhookSignature(?string $payload, ?string $signature, ?string $ipnSecret): bool
     {
         if (!$payload || !$signature || !$ipnSecret) {
             return false;
         }
-
-        // A documentação da NOWPayments especifica o uso de hmac com sha512.
         $expectedSignature = hash_hmac('sha512', $payload, $ipnSecret);
-
-        // Use hash_equals para prevenir ataques de "timing attack".
         return hash_equals($expectedSignature, $signature);
     }
 
     /**
-     * Adiciona créditos à conta do usuário no registro '#CASHPOINTS'.
-     * Esta função é idêntica à do seu PayPalController para manter a consistência.
+     * Adiciona créditos à conta do usuário.
      */
     private function addCreditsToAccount(int $accountId, int $credits)
     {
