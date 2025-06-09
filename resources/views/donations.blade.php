@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div 
+<div
     x-data="donationPage()"
     x-init="init()"
     x-cloak
@@ -16,40 +16,48 @@
     </p>
 
     <div class="flex flex-col justify-center mb-2 space-y-4 max-w-xs mx-auto">
-        <!-- PayPal Button -->
-        <button @click="attemptDonate('paypal')"
-            class="cursor-pointer bg-gray-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition w-full flex items-center justify-center gap-2">
-            <svg id="donate-spinner" class="hidden animate-spin h-5 w-5 text-white"
+        <button @click="attemptDonate('paypal', $event)"
+                class="cursor-pointer bg-gray-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition w-full flex items-center justify-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed">
+            <svg class="hidden animate-spin h-5 w-5 text-white"
                  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10"
-                        stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor"
-                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
             </svg>
-            <span id="donate-text" class="flex items-center gap-2">
+            <span class="flex items-center gap-2">
                 <i class="fab fa-paypal text-white text-lg"></i> Donate via PayPal
             </span>
         </button>
 
-        <!-- PIX Button -->
-        <button @click="attemptDonate('pix')" 
-            class="bg-gray-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition w-full text-center">
-            Donate via PIX
+        <button @click="attemptDonate('pix', $event)"
+                class="bg-gray-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition w-full flex items-center justify-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed">
+            <svg class="hidden animate-spin h-5 w-5 text-white"
+                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <span class="flex items-center gap-2">
+                Donate via PIX
+            </span>
         </button>
 
-        <!-- Crypto Button -->
-        <a href="{{ route('donations.crypto.form') }}"
-            class="bg-gray-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition w-full text-center flex items-center justify-center gap-2">
-            <i class="fas fa-coins text-white text-lg"></i> Donate with Crypto
-        </a>
+        <button @click="attemptDonate('crypto', $event)"
+                class="bg-gray-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition w-full flex items-center justify-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed">
+            <svg class="hidden animate-spin h-5 w-5 text-white"
+                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <span class="flex items-center gap-2">
+                <i class="fas fa-coins text-white text-lg"></i> Donate with Crypto
+            </span>
+        </button>
     </div>
 
     <p class="text-center text-xs text-gray-300 italic mb-4">
         1 USD = 1000 SP
     </p>
 
-    <!-- Modal for login required -->
-    <div 
+    <div
         x-show="showLoginModal"
         x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0 scale-90"
@@ -66,11 +74,11 @@
             </p>
             <div class="flex justify-center gap-4">
                 <button @click="redirectToLogin"
-                    class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-semibold shadow">
+                        class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-semibold shadow">
                     Go to Login
                 </button>
                 <button @click="showLoginModal = false"
-                    class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-semibold shadow">
+                        class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-semibold shadow">
                     Cancel
                 </button>
             </div>
@@ -86,25 +94,45 @@
             init() {
                 // Optional: intro animation or preload logic
             },
-            attemptDonate(method) {
+            attemptDonate(method, event) {
                 if (!this.isLoggedIn) {
                     this.showLoginModal = true;
                     return;
                 }
 
+                const btn = event.currentTarget;
+                const spinner = btn.querySelector('svg');
+                const textSpan = btn.querySelector('span');
+                const originalText = textSpan.innerHTML;
+
+                // Disable all buttons to prevent multiple clicks
+                document.querySelectorAll('button').forEach(button => button.disabled = true);
+                
+                spinner.classList.remove('hidden');
+                textSpan.textContent = 'Redirecting...';
+
+                let redirectUrl = '';
+
                 if (method === 'paypal') {
-                    const btn = document.getElementById('donate-btn');
-                    const spinner = document.getElementById('donate-spinner');
-                    const text = document.getElementById('donate-text');
-
-                    btn.disabled = true;
-                    spinner.classList.remove('hidden');
-                    text.textContent = 'Redirecting...';
-
-                    setTimeout(() => {
-                        window.location.href = "{{ route('donations.paypal') }}";
-                    }, 500);
+                    redirectUrl = "{{ route('donations.paypal') }}";
+                } else if (method === 'pix') {
+                    // Make sure you have a route for PIX donations.
+                    // For example: Route::get('/donations/pix', ...)->name('donations.pix');
+                    redirectUrl = "{{ route('donations.pix') }}"; 
+                } else if (method === 'crypto') {
+                    redirectUrl = "{{ route('donations.crypto.form') }}";
                 }
+
+                setTimeout(() => {
+                    if (redirectUrl) {
+                        window.location.href = redirectUrl;
+                    } else {
+                        // Reset button if no method matched or URL is invalid
+                        document.querySelectorAll('button').forEach(button => button.disabled = false);
+                        spinner.classList.add('hidden');
+                        textSpan.innerHTML = originalText; // Restore original content
+                    }
+                }, 500);
             },
             redirectToLogin() {
                 window.location.href = "/account"; // ou qualquer rota de login do seu sistema
