@@ -15,7 +15,6 @@
         Donate with Crypto
     </h2>
 
-    {{-- Bloco para exibir erros de validação do Laravel --}}
     @if ($errors->any())
         <div class="bg-red-500/50 text-white p-4 rounded-lg mb-4 border border-red-700">
             <ul class="list-disc list-inside">
@@ -30,7 +29,6 @@
         <span class="italic text-xs text-yellow-300">1 USD = 1000 SC</span>
     </p>
 
-    {{-- O formulário agora usa o mesmo @submit do PayPal para ativar o modal --}}
     <form action="{{ route('nowpayments.buy') }}" method="POST" class="space-y-6" @submit="handleLoading">
         @csrf
 
@@ -39,9 +37,9 @@
                 <label for="usd" class="block text-sm text-gray-300 mb-1">USD</label>
                 <input 
                     type="number" 
-                    min="20" {{-- Mínimo para crypto --}}
+                    :min="minUsd"
                     step="0.10" 
-                    x-model="usd" 
+                    x-model.number="usd" 
                     @input="syncFromUSD" 
                     class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 shadow-sm"
                 >
@@ -53,27 +51,28 @@
                 <label for="sc" class="block text-sm text-gray-300 mb-1">Star Credits (SC)</label>
                 <input 
                     type="number" 
-                    min="20000" {{-- Mínimo para crypto --}}
+                    :min="minUsd * rate"
                     step="1000" 
-                    x-model="sc" 
+                    x-model.number="sc" 
                     @input="syncFromSC" 
                     class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 shadow-sm"
                 >
             </div>
         </div>
         
-        {{-- Seletor de Criptomoeda (integrado ao novo design) --}}
         <div>
             <label for="pay_currency" class="block text-sm text-gray-300 mb-1">Select Crypto</label>
-            <select name="pay_currency" required class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 shadow-sm">
+            <select name="pay_currency" required x-model="selectedCurrency"
+                class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 shadow-sm">
                 <option value="btc">Bitcoin (BTC)</option>
                 <option value="usdttrc20">USDT (TRC20)</option>
                 <option value="eth">Ethereum (ETH)</option>
                 <option value="ltc">Litecoin (LTC)</option>
             </select>
         </div>
+        
+        <div class="text-center text-xs text-yellow-300 h-4" x-text="`Minimum for ${selectedCurrency.toUpperCase()}: $${minUsd}`"></div>
 
-        {{-- Campos ocultos para enviar os dados corretos ao controller --}}
         <input type="hidden" name="amount" :value="Number(usd).toFixed(2)" />
         <input type="hidden" name="account_id" value="{{ session('astrocp_user.userid') }}" />
 
@@ -90,7 +89,6 @@
         </button>
     </form>
 
-    {{-- Modal de Confirmação (copiado do seu PayPal, 100% funcional) --}}
     <div 
         x-show="showModal" 
         x-transition:enter="transition ease-out duration-300"
@@ -111,10 +109,18 @@
                 <span class="font-bold text-yellow-300" x-text="'$' + Number(usd).toFixed(2)"></span>?
             </p>
             <div class="flex justify-center gap-4">
-                <button type="button" @click="showModal = false" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition">
+                <button 
+                    type="button" 
+                    @click="showModal = false"
+                    class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition"
+                >
                     Cancel
                 </button>
-                <button type="button" @click="confirmDonation" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg font-semibold transition">
+                <button 
+                    type="button" 
+                    @click="confirmDonation"
+                    class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg font-semibold transition"
+                >
                     Yes, donate
                 </button>
             </div>
@@ -122,33 +128,54 @@
     </div>
 </div>
 
-{{-- Script adaptado do seu PayPal para funcionar com os IDs do formulário de Crypto --}}
 <script>
     function donationFormCrypto() {
         return {
-            usd: 20, // Valor inicial para crypto
-            sc: 20000, // Valor inicial para crypto
+            usd: 30, // O valor inicial será definido dinamicamente no init()
+            sc: 30000,
             rate: 1000,
             show: false,
             showModal: false,
             formEl: null,
+            selectedCurrency: 'btc', // Padrão é a primeira opção da lista (Bitcoin)
+
+            // Propriedade "computada" que sempre retorna o valor mínimo correto
+            get minUsd() {
+                return this.selectedCurrency === 'btc' ? 30 : 20;
+            },
+
             init() {
                 this.show = true;
+                // Ao carregar, o valor em USD já começa com o mínimo correto
+                this.usd = this.minUsd; 
                 this.syncFromUSD();
+
+                // Observa mudanças na moeda e ajusta o valor em USD se ele ficar abaixo do novo mínimo
+                this.$watch('selectedCurrency', () => {
+                    if (this.usd < this.minUsd) {
+                        this.usd = this.minUsd;
+                        this.syncFromUSD();
+                    }
+                })
             },
             syncFromUSD() {
+                if(this.usd === null) this.usd = 0;
                 this.sc = Math.round(this.usd * this.rate);
             },
             syncFromSC() {
+                if(this.sc === null) this.sc = 0;
                 this.usd = parseFloat((this.sc / this.rate).toFixed(2));
             },
             handleLoading(event) {
                 event.preventDefault();
                 this.formEl = event.target;
-                if (this.usd >= 20) { // Check de valor mínimo antes de abrir o modal
+                
+                // Valida o valor contra o mínimo dinâmico antes de abrir o modal
+                if (this.usd >= this.minUsd) {
                     this.showModal = true;
                 } else {
-                    alert('The minimum donation amount for Crypto is $20.00.');
+                    // O alerta é específico para a moeda selecionada
+                    alert(`The minimum donation for ${this.selectedCurrency.toUpperCase()} is $${this.minUsd}.`);
                 }
             },
             confirmDonation() {
@@ -162,6 +189,7 @@
                 spinner.classList.remove('hidden');
                 text.textContent = 'Redirecting...';
 
+                // Envia o formulário que foi guardado na variável 'formEl'
                 this.formEl.submit();
             }
         }
