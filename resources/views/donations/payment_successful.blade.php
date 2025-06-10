@@ -13,11 +13,15 @@
 >
     <h1 class="text-3xl font-bold mb-4 text-yellow-300 font-['Cinzel']">Success!</h1>
     <p class="text-base mb-6">Your order has been successfully registered.</p>
-    <p class="text-lg font-medium mb-4">
+<p class="text-lg font-medium mb-4">
+    @if (session('credits'))
         <span class="text-yellow-400 font-semibold">
-            {{ session('credits') ?? '...' }}
+            {{ session('credits') }}
         </span> Star Credits will be added as soon as your payment is confirmed.
-    </p>
+    @else
+        Your Star Credits will be added as soon as the payment is confirmed.
+    @endif
+</p>
     <a href="{{ url('/') }}" class="text-sm underline text-yellow-300 hover:text-yellow-400 transition">
         ← Back to Home
     </a>

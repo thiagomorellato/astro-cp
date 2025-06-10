@@ -54,8 +54,8 @@ class NOWPaymentsController extends Controller
             'price_currency'   => 'usd',
             'pay_currency'     => $payCurrency,
             'ipn_callback_url' => route('nowpayments.webhook'),
-            'success_url'      => url('/donation/success'), // Rota de sucesso genérica
-            'cancel_url'       => url('/donation/cancel'),   // Rota de cancelamento genérica
+            'success_url'      => url('/donations/payment-successful'), // Rota de sucesso genérica
+            'cancel_url'       => url('/donation/payment-cancelled'),   // Rota de cancelamento genérica
         ]);
 
         // 5. TRATAMENTO DE FALHA NA API (Igual ao PayPalController)
