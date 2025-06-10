@@ -83,7 +83,6 @@ class NOWPaymentsController extends Controller
             'amount_usd' => $amount,
             'status' => 'pending',
             'order_id' => $orderId,
-            'nowpayments_payment_id' => $paymentId,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -99,59 +98,69 @@ class NOWPaymentsController extends Controller
      * Função já estava boa, apenas uma pequena correção.
      */
     public function webhook(Request $request)
-    {
-        $signature = $request->header('x-nowpayments-sig');
-        $ipnSecret = config('services.nowpayments.ipn_secret');
+{
+    $signature = $request->header('x-nowpayments-sig');
+    $ipnSecret = config('services.nowpayments.ipn_secret');
 
-        if (!$this->validateWebhookSignature($request->getContent(), $signature, $ipnSecret)) {
-            Log::warning('Assinatura de webhook da NOWPayments inválida.');
-            return response()->json(['error' => 'Invalid signature'], 401);
+    if (!$this->validateWebhookSignature($request->getContent(), $signature, $ipnSecret)) {
+        Log::warning('Assinatura de webhook da NOWPayments inválida.');
+        return response()->json(['error' => 'Invalid signature'], 401);
+    }
+
+    $data = $request->all();
+    Log::info('Webhook da NOWPayments recebido e validado', $data);
+
+    if (($data['payment_status'] ?? null) === 'finished') {
+        $invoiceId = $data['invoice_id'] ?? null;
+        $paymentId = $data['payment_id'] ?? null;
+
+        if (!$invoiceId) {
+            Log::warning('Webhook da NOWPayments sem invoice_id, não é possível encontrar a doação.');
+            return response()->json(['error' => 'Missing invoice ID'], 400);
         }
 
-        $data = $request->all();
-        Log::info('Webhook da NOWPayments recebido e validado', $data);
+        // <<< A MÁGICA ESTÁ AQUI >>>
+        // Reconstruímos o order_id que salvamos no nosso banco de dados
+        $orderIdToFind = 'astro-np-' . $invoiceId;
 
-        if (($data['payment_status'] ?? null) === 'finished') {
-            $paymentId = $data['payment_id'] ?? null;
-            if (!$paymentId) {
-                return response()->json(['error' => 'Missing payment ID'], 400);
-            }
+        // A busca agora é feita pelo order_id, na conexão correta.
+        $donation = DB::connection('ragnarok')->table('donations_np')
+            ->where('order_id', $orderIdToFind)
+            ->first();
 
-            $donation = DB::connection('ragnarok')->table('donations_np')
-                ->where('nowpayments_payment_id', $paymentId)
-                ->first();
+        if (!$donation) {
+            Log::warning("Doação não encontrada para o order_id: {$orderIdToFind} (derivado do invoice_id: {$invoiceId})");
+            return response()->json(['error' => 'Donation not found'], 404);
+        }
 
-            if (!$donation) {
-                Log::warning("Doação não encontrada para o payment_id da NOWPayments: {$paymentId}");
-                return response()->json(['error' => 'Donation not found'], 404);
-            }
+        if ($donation->status === 'success') {
+            Log::info("Webhook para a doação {$donation->id} (order_id: {$orderIdToFind}) já foi processado.");
+            return response()->json(['message' => 'Event already processed'], 200);
+        }
 
-            if ($donation->status === 'success') {
-                Log::info("Webhook para a doação {$donation->id} já foi processado.");
-                return response()->json(['message' => 'Event already processed'], 200);
-            }
+        $accountId = $donation->account_id;
+        $usdAmount = $donation->amount_usd;
+        $conversionRate = config('services.paypal.conversion_rate', 1000);
+        $credits = (int) floor(floatval($usdAmount) * $conversionRate);
 
-            $accountId = $donation->account_id;
-            $usdAmount = $donation->amount_usd;
-            $conversionRate = config('services.paypal.conversion_rate', 1000);
-            $credits = (int) floor(floatval($usdAmount) * $conversionRate);
+        $this->addCreditsToAccount($accountId, $credits);
 
-            $this->addCreditsToAccount($accountId, $credits);
-
-         
-            DB::connection('ragnarok')->table('donations_np')->where('id', $donation->id)->update([
+        // Atualizamos o registro com o status e também com o payment_id para referência
+        DB::connection('ragnarok')->table('donations_np')
+            ->where('id', $donation->id)
+            ->update([
                 'status' => 'success',
-                'credits' => $credits, 
+                'credits' => $credits,
+                'nowpayments_payment_id' => $paymentId, // Agora salvamos o payment_id
                 'updated_at' => now(),
             ]);
 
-            Log::info("Doação via NOWPayments processada: Doação ID {$donation->id}, Conta {$accountId}, USD {$usdAmount}, Créditos {$credits}");
-            return response()->json(['message' => 'Payment processed successfully']);
-        }
-
-        return response()->json(['message' => 'Event ignored'], 200);
+        Log::info("Doação via NOWPayments processada: Doação ID {$donation->id}, Order ID {$orderIdToFind}, Conta {$accountId}, USD {$usdAmount}, Créditos {$credits}");
+        return response()->json(['message' => 'Payment processed successfully']);
     }
 
+    return response()->json(['message' => 'Event ignored'], 200);
+}
     /**
      * Valida a assinatura do webhook.
      */
@@ -168,22 +177,25 @@ class NOWPaymentsController extends Controller
      * Adiciona créditos à conta do usuário.
      */
     private function addCreditsToAccount(int $accountId, int $credits)
-    {
-        $existing = DB::connection('ragnarok')->table('acc_reg_num')
+{
+    $existing = DB::connection('ragnarok')->table('acc_reg_num')
+        ->where('account_id', $accountId)
+        ->where('key', '#CASHPOINTS')
+        ->first();
+
+    if ($existing) {
+        // CORREÇÃO: Usamos os mesmos 'where' para encontrar e para atualizar.
+        DB::connection('ragnarok')->table('acc_reg_num')
             ->where('account_id', $accountId)
             ->where('key', '#CASHPOINTS')
-            ->first();
-
-        if ($existing) {
-            DB::connection('ragnarok')->table('acc_reg_num')
-                ->where('id', $existing->id)
-                ->increment('value', $credits);
-        } else {
-            DB::connection('ragnarok')->table('acc_reg_num')->insert([
-                'account_id' => $accountId,
-                'key' => '#CASHPOINTS',
-                'value' => $credits,
-            ]);
-        }
+            ->increment('value', $credits);
+    } else {
+        // A lógica de inserir um novo registro já estava correta.
+        DB::connection('ragnarok')->table('acc_reg_num')->insert([
+            'account_id' => $accountId,
+            'key' => '#CASHPOINTS',
+            'value' => $credits,
+        ]);
     }
+}
 }
