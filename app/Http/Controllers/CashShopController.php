@@ -192,7 +192,7 @@ class CashShopController extends Controller
 
         // Configurações para SSH/SCP
         $sshUser = 'root'; // Usuário SSH no servidor remoto
-        $sshHost = '159.203.42.146'; // IP ou hostname do servidor remoto
+        $sshHost = '159.203.15.99'; // IP ou hostname do servidor remoto
         
         // !!! IMPORTANTE: Defina o caminho completo onde o arquivo deve ser salvo no servidor REMOTO !!!
         // Exemplo: '/home/usuario_remoto/ragnarok/conf/item_cash.yml'
