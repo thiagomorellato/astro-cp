@@ -101,6 +101,7 @@ class NOWPaymentsController extends Controller
 {
     $signature = $request->header('x-nowpayments-sig');
     $ipnSecret = config('services.nowpayments.ipn_secret');
+    
 
     if (!$this->validateWebhookSignature($request->getContent(), $signature, $ipnSecret)) {
         Log::warning('Assinatura de webhook da NOWPayments inválida.');
@@ -113,6 +114,8 @@ class NOWPaymentsController extends Controller
     if (($data['payment_status'] ?? null) === 'finished') {
         $invoiceId = $data['invoice_id'] ?? null;
         $paymentId = $data['payment_id'] ?? null;
+        $transactionHash = $data['payment_hash'] ?? null;
+        
 
         if (!$invoiceId) {
             Log::warning('Webhook da NOWPayments sem invoice_id, não é possível encontrar a doação.');
@@ -152,6 +155,7 @@ class NOWPaymentsController extends Controller
                 'status' => 'success',
                 'credits' => $credits,
                 'nowpayments_payment_id' => $paymentId, // Agora salvamos o payment_id
+                'transaction_hash' => $transactionHash,
                 'updated_at' => now(),
             ]);
 
