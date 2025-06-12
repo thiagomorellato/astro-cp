@@ -144,9 +144,53 @@
         </div>
     </div>
 
-    {{-- NOVO CONTEÚDO DA ABA DE DOAÇÕES --}}
+ {{-- NOVA ABA DE DOAÇÕES (VERSÃO RESPONSIVA) --}}
     <div x-show="tab === 'donations'" x-transition.opacity.duration.500ms>
-        <div class="bg-black/20 rounded-lg border border-white/10">
+
+        {{-- 1. Visualização em Celular (Cards) - Visível apenas em telas pequenas --}}
+        <div class="md:hidden space-y-3">
+            @forelse($donations as $donation)
+                <div class="bg-gray-800/70 p-4 rounded-lg border border-gray-700/60 text-sm">
+                    <div class="flex justify-between items-start mb-3">
+                        {{-- Método e Valor --}}
+                        <div>
+                            <p class="font-bold text-base text-white">${{ number_format($donation->amount_usd, 2) }}</p>
+                            <p class="text-xs text-gray-400">{{ $donation->method }}</p>
+                        </div>
+                        {{-- Status --}}
+                        <div>
+                            @if(strtolower($donation->status) == 'completed' || strtolower($donation->status) == 'paid')
+                                <span class="px-2 py-1 text-xs font-semibold text-green-800 bg-green-300 rounded-full">Completed</span>
+                            @elseif(strtolower($donation->status) == 'pending')
+                                <span class="px-2 py-1 text-xs font-semibold text-yellow-800 bg-yellow-300 rounded-full">Pending</span>
+                            @else
+                                <span class="px-2 py-1 text-xs font-semibold text-red-800 bg-red-300 rounded-full">{{ ucfirst($donation->status) }}</span>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="border-t border-white/10 pt-3 flex justify-between items-center text-xs">
+                        {{-- Créditos ou Assinatura --}}
+                        <div class="text-gray-300">
+                            <span class="text-gray-500">Credits: </span>
+                            @if(isset($donation->paypal_subscription) && strtolower(trim($donation->paypal_subscription)) == 'activated')
+                                <span class="font-semibold text-purple-400">Subscription</span>
+                            @else
+                                <span class="font-mono">{{ number_format($donation->credits) }}</span>
+                            @endif
+                        </div>
+                        {{-- Data --}}
+                        <div class="text-gray-400 font-mono">
+                            {{ date('M d, Y H:i', strtotime($donation->created_at)) }}
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <p class="text-center text-gray-400 italic py-4">You have no donation history.</p>
+            @endforelse
+        </div>
+
+        {{-- 2. Visualização em Desktop (Tabela) - Visível apenas em telas médias ou maiores --}}
+        <div class="hidden md:block bg-black/20 rounded-lg border border-white/10">
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm text-left text-gray-300">
                     <thead class="text-xs text-yellow-400 uppercase bg-black/30">
@@ -160,12 +204,11 @@
                     </thead>
                     <tbody>
                         @forelse($donations as $donation)
-                                @dd($donation) 
                         <tr class="border-b border-gray-700/50 hover:bg-white/5 transition">
                             <td class="px-6 py-4 font-medium whitespace-nowrap">{{ $donation->method }}</td>
                             <td class="px-6 py-4">${{ number_format($donation->amount_usd, 2) }}</td>
                             <td class="px-6 py-4">
-                                @if(isset($donation->paypal_subscription) && strtolower($donation->paypal_subscription) == 'activated')
+                                @if(isset($donation->paypal_subscription) && strtolower(trim($donation->paypal_subscription)) == 'activated')
                                     <span class="font-semibold text-purple-400">Subscription</span>
                                 @else
                                     {{ number_format($donation->credits) }}
@@ -194,7 +237,6 @@
             </div>
         </div>
     </div>
-
     {{-- Modais Existentes --}}
     {{-- Delete Confirmation Modal --}}
     <div 
