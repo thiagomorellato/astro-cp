@@ -152,7 +152,7 @@
                                     <span class="px-2 py-1 text-xs font-semibold text-red-800 bg-red-300 rounded-full">{{ ucfirst($donation->status) }}</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ \Carbon\Carbon::parse($donation->created_at)->format('M d, Y H:i') }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ date('M d, Y H:i', strtotime($donation->created_at)) }}</td>
                         </tr>
                         @empty
                         <tr>

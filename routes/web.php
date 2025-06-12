@@ -77,7 +77,6 @@ Route::post('/char/reset-position', [UserController::class, 'resetPosition'])->n
 Route::post('/char/reset-look', [UserController::class, 'resetLook'])->name('char.resetLook');
 Route::post('/account/change-password', [UserController::class, 'updatePassword'])->name('account.changePassword');
 Route::post('/account/change-email', [UserController::class, 'updateEmail'])->name('account.changeEmail');
-Route::get('/user', [UserController::class, 'showUserDashboard'])->name('user.dashboard');
 
 
 Route::post('/paypal/subscribe/create', [PayPalSubscriptionController::class, 'create']);

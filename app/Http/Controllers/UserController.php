@@ -9,38 +9,55 @@ class UserController extends Controller
 {
     public function index()
     {
+        // 1. Validação da sessão
         if (!session()->has('astrocp_user')) {
             return redirect()->route('astrocp.login.form')->with('error', 'You must be logged in.');
         }
+        $sessionUser = session('astrocp_user');
+        $userid = $sessionUser['userid'];
 
-        $user = session('astrocp_user');
-        $userid = $user['userid'];
-
-        // Busca dados do usuário pelo userid para obter account_id e vip_time
-        $userData = DB::connection('ragnarok')
+        // 2. Busca de dados do usuário no banco de dados
+        $user = DB::connection('ragnarok')
             ->table('login')
             ->where('userid', $userid)
             ->first();
 
-        if (!$userData) {
-            return redirect()->route('login')->with('error', 'User not found.');
+        if (!$user) {
+            session()->forget('astrocp_user');
+            return redirect()->route('login')->with('error', 'User not found. Please log in again.');
         }
+        
+        $accountId = $user->account_id;
 
-        // Verifica se o usuário é VIP
-        $isVip = $userData->vip_time != 0;
+        // 3. Verifica se o usuário é VIP (SUA LÓGICA ORIGINAL)
+        $isVip = $user->vip_time != 0;
 
-        // Busca personagens pelo account_id
+        // 4. Busca os personagens da conta
         $characters = DB::connection('ragnarok')
             ->table('char')
-            ->where('account_id', $userData->account_id)
+            ->where('account_id', $accountId)
+            ->get();
+            
+        // 5. Busca o histórico de doações
+        $donationsPP = DB::connection('ragnarok')->table('donations_pp')
+            ->where('account_id', $accountId)
+            ->select('amount_usd', 'status', 'credits', 'created_at', DB::raw("'PayPal' as method"))
             ->get();
 
-        // Passa dados para a view
+        $donationsNP = DB::connection('ragnarok')->table('donations_np')
+            ->where('account_id', $accountId)
+            ->select('amount_usd', 'status', 'credits', 'created_at', DB::raw("'Crypto' as method"))
+            ->get();
+            
+        // 6. Junta e ordena as doações
+        $donations = $donationsPP->merge($donationsNP)->sortByDesc('created_at');
+
+        // 7. Passa todos os dados necessários para a view
         return view('user', [
-            'userData' => $userData,
+            'user'       => $user,
             'characters' => $characters,
-            'username' => $userid,
-            'isVip' => $isVip,
+            'isVip'      => $isVip,
+            'donations'  => $donations
         ]);
     }
 
@@ -257,33 +274,5 @@ public function updatePassword(Request $request)
             ->update(['email' => $request->new_email]);
         
         return back()->with('success', 'E-mail changed successfully!');
-    }
-    public function showUserDashboard()
-    {
-        $userid = session('astrocp_user.userid');
-        if (!$userid) {
-            return redirect('/login');
-        }
-
-        $user = DB::connection('ragnarok')->table('login')->where('userid', $userid)->first();
-        if (!$user) {
-            return redirect('/login')->with('error', 'User not found.');
-        }
-
-        $accountId = $user->account_id;
-
-        $donationsPP = DB::connection('ragnarok')->table('donations_pp')
-            ->where('account_id', $accountId)
-            ->select('amount_usd', 'status', 'credits', 'created_at', DB::raw("'PayPal' as method"))
-            ->get();
-
-        $donationsNP = DB::connection('ragnarok')->table('donations_np')
-            ->where('account_id', $accountId)
-            ->select('amount_usd', 'status', 'credits', 'created_at', DB::raw("'Crypto' as method"))
-            ->get();
-
-        $donations = $donationsPP->merge($donationsNP)->sortByDesc('created_at');
-
-        return view('user', compact('user', 'donations'));
     }
 }
