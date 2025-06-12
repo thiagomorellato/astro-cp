@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-{{-- Feedback messages --}}
+{{-- Mensagens de Feedback (existentes) --}}
 @if(session('success'))
     <div 
         x-data="{ show: true }" 
@@ -15,7 +15,6 @@
         <p class="text-sm font-semibold text-center">{{ session('success') }}</p>
     </div>
 @endif
-
 @if(session('error'))
     <div 
         x-data="{ show: true }" 
@@ -29,7 +28,6 @@
         <p class="text-sm font-semibold text-center">{{ session('error') }}</p>
     </div>
 @endif
-
 @if ($errors->any())
     <div
         x-data="{ show: true }" 
@@ -50,7 +48,7 @@
     </div>
 @endif
 
-
+{{-- Início do Painel do Usuário --}}
 <div 
     x-data="{ 
         tab: 'account', 
@@ -63,37 +61,23 @@
     }"
     class="bg-white/10 backdrop-blur-md text-white p-6 rounded-xl max-w-4xl mx-auto shadow-lg border border-white/20"
 >
-    {{-- TABS NAVIGATION --}}
+    {{-- Navegação por Abas --}}
     <div class="flex border-b border-white/20 mb-6">
-        <button 
-            @click="tab = 'account'"
-            :class="tab === 'account' ? 'border-b-2 border-yellow-400 text-yellow-400' : 'text-gray-300 hover:text-white'" 
-            class="py-2 px-4 text-sm font-semibold transition cursor-pointer focus:outline-none"
-        >
+        <button @click="tab = 'account'" :class="tab === 'account' ? 'border-b-2 border-yellow-400 text-yellow-400' : 'text-gray-300 hover:text-white'" class="py-2 px-4 text-sm font-semibold transition cursor-pointer focus:outline-none">
             Account
         </button>
-        <button 
-            @click="tab = 'chars'"
-            :class="tab === 'chars' ? 'border-b-2 border-yellow-400 text-yellow-400' : 'text-gray-300 hover:text-white'" 
-            class="py-2 px-4 text-sm font-semibold transition cursor-pointer focus:outline-none"
-        >
+        <button @click="tab = 'chars'" :class="tab === 'chars' ? 'border-b-2 border-yellow-400 text-yellow-400' : 'text-gray-300 hover:text-white'" class="py-2 px-4 text-sm font-semibold transition cursor-pointer focus:outline-none">
             Chars
         </button>
-        {{-- NOVA ABA DE DOAÇÕES --}}
-        <button 
-            @click="tab = 'donations'"
-            :class="tab === 'donations' ? 'border-b-2 border-yellow-400 text-yellow-400' : 'text-gray-300 hover:text-white'" 
-            class="py-2 px-4 text-sm font-semibold transition cursor-pointer focus:outline-none"
-        >
+        <button @click="tab = 'donations'" :class="tab === 'donations' ? 'border-b-2 border-yellow-400 text-yellow-400' : 'text-gray-300 hover:text-white'" class="py-2 px-4 text-sm font-semibold transition cursor-pointer focus:outline-none">
             Donations
         </button>
     </div>
 
-    {{-- Account Tab --}}
+    {{-- Aba "Account" --}}
     <div x-show="tab === 'account'" x-transition.opacity.duration.500ms>
-        {{-- O conteúdo da sua aba "Account" permanece aqui... --}}
-        {{-- Adaptei a variável de $userData para $user para corresponder ao que o controller está enviando --}}
         <div class="space-y-3 text-sm">
+            {{-- Detalhes da Conta --}}
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-2 rounded-md bg-black/10">
                 <span class="text-gray-300 font-semibold sm:mr-3">Account ID:</span>
                 <span class="text-gray-100 font-mono mt-1 sm:mt-0 text-left sm:text-right w-full sm:w-auto">{{ $user->userid ?? 'N/A' }}</span>
@@ -102,19 +86,56 @@
                 <span class="text-gray-300 font-semibold sm:mr-3">Registered E-mail:</span>
                 <span class="text-gray-100 font-mono mt-1 sm:mt-0 text-left sm:text-right w-full sm:w-auto">{{ $user->email ?? 'N/A' }}</span>
             </div>
-            {{-- Restante do conteúdo da aba de conta... --}}
+            
+            {{-- SEÇÃO RESTAURADA: VIP Status --}}
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-2 rounded-md bg-black/10">
+                <span class="text-gray-300 font-semibold">VIP Status:</span>
+                <div class="mt-1 sm:mt-0 w-full sm:w-auto flex sm:justify-end">
+                    @if($isVip)
+                        <span class="text-green-400 font-bold px-2 py-1 bg-green-500/20 rounded-md w-full sm:w-auto text-center sm:text-left">Active</span>
+                    @else
+                        <button onclick="openVipModal()" class="bg-gray-500 hover:bg-yellow-500 text-white text-xs py-2 rounded w-full sm:w-1/2"> 
+                            Subscribe
+                        </button>
+                    @endif
+                </div>
+            </div>
+
+            {{-- SEÇÃO RESTAURADA: Account Management --}}
+            <div class="border-t border-white/10 pt-4 mt-5 space-y-3 sm:space-y-2">
+                <h3 class="text-md font-semibold text-yellow-400 mb-2">Account Management</h3>
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-2 rounded-md hover:bg-white/5 transition">
+                    <span class="text-gray-300 mb-1 sm:mb-0">Change Password</span>
+                    <button @click="changePasswordModalOpen = true" class="bg-gray-500 hover:bg-yellow-500 text-white text-xs py-2 rounded w-full sm:w-1/2">
+                        Change
+                    </button>
+                </div>
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-2 rounded-md hover:bg-white/5 transition">
+                    <span class="text-gray-300 mb-1 sm:mb-0">Change E-mail</span>
+                    <button @click="changeEmailModalOpen = true" class="bg-gray-500 hover:bg-yellow-500 text-white text-xs py-2 rounded w-full sm:w-1/2">
+                        Change
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
-    {{-- Chars Tab --}}
+    {{-- Aba "Chars" --}}
     <div x-show="tab === 'chars'" x-transition.opacity.duration.500ms>
-        {{-- O conteúdo da sua aba "Chars" permanece aqui... --}}
         <div class="space-y-3">
             @forelse($characters as $char)
             <div class="bg-gray-800/70 px-4 py-3 rounded-lg flex justify-between items-center border border-gray-700/60 hover:border-gray-500/80 transition-all duration-150">
                 <span class="font-medium text-gray-100">{{ $char->name }} <span class="text-xs text-gray-400">(Lvl: {{ $char->base_level ?? 'N/A' }} / Job: {{ $char->class ?? 'N/A' }})</span></span>
                 <div class="flex items-center gap-2 text-lg">
-                    {{-- Botões de ação para personagens --}}
+                    <button @click="selectedChar = '{{ $char->name }}'; confirmLook = true;" class="text-yellow-400 hover:text-yellow-300 transition-colors duration-150 p-1 hover:bg-white/10 rounded-md" title="Reset look (Default)">
+                        🎭
+                    </button>
+                    <button @click="selectedChar = '{{ $char->name }}'; confirmReset = true;" class="text-blue-400 hover:text-blue-300 transition-colors duration-150 p-1 hover:bg-white/10 rounded-md" title="Reset position (Prontera)">
+                        📍
+                    </button>
+                    <button @click="selectedChar = '{{ $char->name }}'; confirmDelete = true;" class="text-red-400 hover:text-red-300 transition-colors duration-150 p-1 hover:bg-white/10 rounded-md" title="Delete character">
+                        🗑️
+                    </button>
                 </div>
             </div>
             @empty
