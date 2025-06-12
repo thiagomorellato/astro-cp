@@ -258,4 +258,32 @@ public function updatePassword(Request $request)
         
         return back()->with('success', 'E-mail changed successfully!');
     }
+    public function showUserDashboard()
+    {
+        $userid = session('astrocp_user.userid');
+        if (!$userid) {
+            return redirect('/login');
+        }
+
+        $user = DB::connection('ragnarok')->table('login')->where('userid', $userid)->first();
+        if (!$user) {
+            return redirect('/login')->with('error', 'User not found.');
+        }
+
+        $accountId = $user->account_id;
+
+        $donationsPP = DB::connection('ragnarok')->table('donations_pp')
+            ->where('account_id', $accountId)
+            ->select('amount_usd', 'status', 'credits', 'created_at', DB::raw("'PayPal' as method"))
+            ->get();
+
+        $donationsNP = DB::connection('ragnarok')->table('donations_np')
+            ->where('account_id', $accountId)
+            ->select('amount_usd', 'status', 'credits', 'created_at', DB::raw("'Crypto' as method"))
+            ->get();
+
+        $donations = $donationsPP->merge($donationsNP)->sortByDesc('created_at');
+
+        return view('user', compact('user', 'donations'));
+    }
 }
