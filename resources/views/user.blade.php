@@ -94,7 +94,7 @@
                     @if($isVip)
                         <span class="text-green-400 font-bold px-2 py-1 bg-green-500/20 rounded-md w-full sm:w-auto text-center sm:text-left">Active</span>
                     @else
-                        <button onclick="openVipModal()" class="bg-gray-500 hover:bg-yellow-500 text-white text-xs py-2 rounded w-full sm:w-1/2"> 
+                        <button onclick="openVipModal()" class="bg-gray-600 hover:bg-yellow-500 text-white font-bold text-xs py-2 px-5 rounded-md w-full sm:w-auto whitespace-nowrap transition-colors duration-200 flex items-center justify-center">
                             Subscribe
                         </button>
                     @endif
@@ -163,7 +163,14 @@
                         <tr class="border-b border-gray-700/50 hover:bg-white/5 transition">
                             <td class="px-6 py-4 font-medium whitespace-nowrap">{{ $donation->method }}</td>
                             <td class="px-6 py-4">${{ number_format($donation->amount_usd, 2) }}</td>
-                            <td class="px-6 py-4">{{ number_format($donation->credits) }}</td>
+                            <td class="px-6 py-4">
+                                {{-- Verifica se a doação é uma assinatura --}}
+                                @if(isset($donation->paypal_subscription) && strtolower($donation->paypal_subscription) == 'success')
+                                    <span class="font-semibold text-purple-400">Subscription</span>
+                                @else
+                                    {{ number_format($donation->credits) }}
+                                @endif
+                            </td>
                             <td class="px-6 py-4">
                                 @if(strtolower($donation->status) == 'completed' || strtolower($donation->status) == 'paid')
                                     <span class="px-2 py-1 text-xs font-semibold text-green-800 bg-green-300 rounded-full">Completed</span>

@@ -41,7 +41,7 @@ class UserController extends Controller
         // 5. Busca o histórico de doações
         $donationsPP = DB::connection('ragnarok')->table('donations_pp')
             ->where('account_id', $accountId)
-            ->select('amount_usd', 'status', 'credits', 'created_at', DB::raw("'PayPal' as method"))
+            ->select('amount_usd', 'status', 'credits', 'created_at', 'paypal_subscription', DB::raw("'PayPal' as method"))
             ->get();
 
         $donationsNP = DB::connection('ragnarok')->table('donations_np')
