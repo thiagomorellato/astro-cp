@@ -164,8 +164,7 @@
                             <td class="px-6 py-4 font-medium whitespace-nowrap">{{ $donation->method }}</td>
                             <td class="px-6 py-4">${{ number_format($donation->amount_usd, 2) }}</td>
                             <td class="px-6 py-4">
-                                {{-- Verifica se a doação é uma assinatura --}}
-                                @if(isset($donation->paypal_subscription) && strtolower($donation->paypal_subscription) == 'success')
+                                @if(isset($donation->paypal_subscription) && strtolower($donation->paypal_subscription) == 'activated')
                                     <span class="font-semibold text-purple-400">Subscription</span>
                                 @else
                                     {{ number_format($donation->credits) }}
