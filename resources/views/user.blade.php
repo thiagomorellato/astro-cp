@@ -160,6 +160,7 @@
                     </thead>
                     <tbody>
                         @forelse($donations as $donation)
+                                @dd($donation) 
                         <tr class="border-b border-gray-700/50 hover:bg-white/5 transition">
                             <td class="px-6 py-4 font-medium whitespace-nowrap">{{ $donation->method }}</td>
                             <td class="px-6 py-4">${{ number_format($donation->amount_usd, 2) }}</td>
