@@ -29,7 +29,7 @@ class PayPalSubscriptionController extends Controller
 
     $response = Http::withToken($accessToken)
         ->post(config('services.paypal.base_url') . '/v1/billing/subscriptions', [
-            'plan_id' => 'P-5JK91908E08174815NAW6O4Q', // Use seu ID de plano
+            'plan_id' => 'P-9KF04931F8882161GNB4BCVA', // Use seu ID de plano
             'subscriber' => [
                 'name' => [
                     'given_name' => 'Player',
