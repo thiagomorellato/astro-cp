@@ -144,7 +144,7 @@ class NOWPaymentsController extends Controller
         $accountId = $donation->account_id;
         $usdAmount = $donation->amount_usd;
         $conversionRate = config('services.paypal.conversion_rate', 1000);
-        $credits = (int) floor(floatval($usdAmount) * $conversionRate * 1.05);
+        $credits = (int) floor(floatval($usdAmount) * $conversionRate * 1.15);
 
         $this->addCreditsToAccount($accountId, $credits);
 
