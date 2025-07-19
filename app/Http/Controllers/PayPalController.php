@@ -110,7 +110,7 @@ class PayPalController extends Controller
         }
 
         // 💰 Calculate SC
-        $rate = 1000; // 1 USD = 1000 SC
+        $rate = 1100; // 1 USD = 1000 SC
         $credits = (int) ($donation->amount_usd * $rate);
 
         // ✅ Update donation status
