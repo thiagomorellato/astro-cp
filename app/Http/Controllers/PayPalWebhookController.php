@@ -83,7 +83,7 @@ class PayPalWebhookController extends Controller
                 return response()->json(['error' => 'Invalid account ID'], 400);
             }
 
-            $conversionRate = config('services.paypal.conversion_rate', 1100);
+            $conversionRate = config('services.paypal.conversion_rate', 1000);
             $credits = (int) floor(floatval($amount) * $conversionRate);
 
             $existing = DB::connection('ragnarok')->table('acc_reg_num')
