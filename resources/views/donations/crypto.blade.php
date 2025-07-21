@@ -12,7 +12,7 @@
     class="bg-white/10 backdrop-blur-md text-white p-6 rounded-xl max-w-sm mx-auto shadow-lg border border-white/20"
 >
     <h2 class="text-2xl font-semibold text-center mb-4 text-yellow-500 font-['Cinzel'] drop-shadow">
-        Donate with Crypto
+        Donate with Crypto (+5% bonus)
     </h2>
 
     @if ($errors->any())

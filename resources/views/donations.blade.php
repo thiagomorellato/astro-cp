@@ -48,13 +48,13 @@
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
             </svg>
             <span class="flex items-center gap-2">
-                <i class="fas fa-coins text-white text-lg"></i> Donate with Crypto
+                <i class="fas fa-coins text-white text-lg"></i> Donate with Crypto(+5%)
             </span>
         </button>
     </div>
 
     <p class="text-center text-xs text-gray-300 italic mb-4">
-        1 USD = 1000 SP
+        1 USD = 1000 SC
     </p>
 
     <div
