@@ -107,3 +107,4 @@ Route::view('/donations/pix', 'donations.pix')->name('donations.asaas.form');
 
 // Rota POST para criar a cobrança no Asaas via controller
 Route::post('/donations/asaas/create', [AsaasController::class, 'createDonation'])->name('donations.asaas.create');
+Route::post('/asaas/webhook', [AsaasController::class, 'webhook']);

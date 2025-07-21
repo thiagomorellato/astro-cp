@@ -15,6 +15,7 @@ class VerifyCsrfToken extends Middleware
      'paypal/webhook',
      '/paypal/subscribe',
      'webhook/*',
+     'asaas/webhook',
 
     ];
 }
