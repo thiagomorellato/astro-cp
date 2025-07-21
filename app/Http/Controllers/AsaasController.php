@@ -51,7 +51,7 @@ class AsaasController extends Controller
 
         // 6. Cria cobrança
         $response = Http::withHeaders([
-            'access_token' => $asaasApiKey,
+            'Authorization' => "Bearer {$asaasApiKey}",
             'Content-Type' => 'application/json',
         ])->post("{$asaasUrl}payments", [
             'customer' => $customerId,
@@ -179,7 +179,7 @@ class AsaasController extends Controller
         }
 
         $response = Http::withHeaders([
-            'Authorization' => "Bearer {$asaasApiKey}",
+            'access_token' => $asaasApiKey,
             'Content-Type' => 'application/json',
         ])->post("{$asaasUrl}customers", [
             'name' => $username,
