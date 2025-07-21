@@ -11,10 +11,19 @@
     x-cloak
     class="bg-white/10 backdrop-blur-md text-white p-6 rounded-xl max-w-sm mx-auto shadow-lg border border-white/20"
     >
+      <h2 class="text-2xl font-['Cinzel'] text-yellow-500 mb-2">Discord</h2>
+            <p class="mt-4 text-sm text-white/80">
+        https://discord.gg/GNMjPgynyv
+      </p>
       <h2 class="text-2xl font-['Cinzel'] text-yellow-500 mb-2">Rates</h2>
             <p class="mt-4 text-sm text-white/80">
         30x/30x/30x
       </p>
+      <h2 class="text-2xl font-['Cinzel'] text-yellow-500 mb-2">Features</h2>
+            <p class="mt-4 text-sm text-white/80">
+        4a classe, custom systems, ep18
+      </p>
+
     </div>
     
 @endsection
