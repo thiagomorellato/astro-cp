@@ -9,7 +9,7 @@
     x-transition:enter-start="opacity-0 translate-y-4"
     x-transition:enter-end="opacity-100 translate-y-0"
     x-cloak
-    class="bg-white/10 backdrop-blur-md text-white p-6 rounded-xl max-w-sm mx-auto shadow-lg border border-white/20"
+    class="bg-white/10 backdrop-blur-md mb-4 text-white p-6 rounded-xl max-w-sm mx-auto shadow-lg border border-white/20"
     >
       <h2 class="text-2xl font-['Cinzel'] text-yellow-500 mb-2">Discord</h2>
             <p class="mt-4 text-sm text-white/80 mb-2">
