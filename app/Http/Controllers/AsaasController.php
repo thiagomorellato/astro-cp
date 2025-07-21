@@ -94,11 +94,7 @@ class AsaasController extends Controller
 
     public function webhook(Request $request)
     {
-        // Valida token webhook
-        $receivedToken = $request->header('accessToken') 
-            ?? $request->header('Authorization') 
-            ?? $request->bearerToken();
-
+        $receivedToken = $request->query('token');
         $expectedToken = config('services.asaas.webhook_token');
 
         if (!$receivedToken || $receivedToken !== $expectedToken) {
@@ -109,7 +105,6 @@ class AsaasController extends Controller
             ]);
             return response()->json(['error' => 'Invalid webhook token'], 401);
         }
-
 
         $data = $request->all();
         Log::info('Asaas webhook received', $data);
