@@ -51,11 +51,11 @@ class AsaasController extends Controller
 
         // 6. Cria cobrança
         $response = Http::withHeaders([
-            'Authorization' => "Bearer {$asaasApiKey}",
+            'access_token' => $asaasApiKey,
             'Content-Type' => 'application/json',
         ])->post("{$asaasUrl}payments", [
             'customer' => $customerId,
-            'billingType' => 'PIX',
+            'billingType' => 'UNDEFINED',
             'value' => $amount,
             'dueDate' => now()->addDays(1)->format('Y-m-d'),
             'description' => "Donation for account ID {$accountId}",
