@@ -12,12 +12,14 @@
     class="bg-white/10 backdrop-blur-md mb-4 text-white p-6 rounded-xl max-w-sm mx-auto shadow-lg border border-white/20"
     >
       <h2 class="text-2xl font-['Cinzel'] text-yellow-500 mb-2">Discord</h2>
-            <p class="mt-4 text-sm text-white/80 mb-2">
-                    <a href="https://discord.gg/GNMjPgynyv" target="_blank" class="text-yellow-300 hover:underline">
-                Discord Server
-            </a>
+      <p class="mt-4 text-sm text-white/80 mb-2">
+        <a href="https://discord.gg/GNMjPgynyv" target="_blank" class="text-white/80 hover:underline flex items-center gap-2">
+          <i class="fab fa-discord text-lg"></i>
+          Discord Server
+        </a>
       </p>
-      <h2 class="text-2xl font-['Cinzel'] text-white/80 mb-2">Rates</h2>
+
+      <h2 class="text-2xl font-['Cinzel'] text-yellow-500 mb-2">Rates</h2>
             <p class="mt-4 text-sm text-white/80 mb-2">
         30x/30x/30x
       </p>

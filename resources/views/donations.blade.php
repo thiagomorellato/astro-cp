@@ -116,9 +116,7 @@
                 if (method === 'paypal') {
                     redirectUrl = "{{ route('donations.paypal') }}";
                 } else if (method === 'pix') {
-                    // Make sure you have a route for PIX donations.
-                    // For example: Route::get('/donations/pix', ...)->name('donations.pix');
-                    redirectUrl = "/account"; 
+                    redirectUrl = "{{ route('donations.asaas.form') }}"; 
                 } else if (method === 'crypto') {
                     redirectUrl = "{{ route('donations.crypto.form') }}";
                 }
