@@ -12,15 +12,17 @@
     class="bg-white/10 backdrop-blur-md text-white p-6 rounded-xl max-w-sm mx-auto shadow-lg border border-white/20"
     >
       <h2 class="text-2xl font-['Cinzel'] text-yellow-500 mb-2">Discord</h2>
-            <p class="mt-4 text-sm text-white/80">
-        https://discord.gg/GNMjPgynyv
+            <p class="mt-4 text-sm text-white/80 mb-2">
+                    <a href="https://discord.gg/GNMjPgynyv" target="_blank" class="text-yellow-300 hover:underline">
+                Discord Server
+            </a>
       </p>
       <h2 class="text-2xl font-['Cinzel'] text-yellow-500 mb-2">Rates</h2>
-            <p class="mt-4 text-sm text-white/80">
+            <p class="mt-4 text-sm text-white/80 mb-2">
         30x/30x/30x
       </p>
       <h2 class="text-2xl font-['Cinzel'] text-yellow-500 mb-2">Features</h2>
-            <p class="mt-4 text-sm text-white/80">
+            <p class="mt-4 text-sm text-white/80 mb-2">
         4a classe, custom systems, ep18
       </p>
 
