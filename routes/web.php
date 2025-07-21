@@ -98,3 +98,12 @@ Route::delete('/cash-shop/tab/{tabName}', [CashShopController::class, 'clearTabI
 Route::get('/donation/crypto', [NOWPaymentsController::class, 'showCryptoForm'])->name('donations.crypto.form');
 Route::post('/donation/crypto', [NOWPaymentsController::class, 'createDonation'])->name('nowpayments.buy');
 Route::post('/webhook/nowpayments', [NOWPaymentsController::class, 'webhook'])->name('nowpayments.webhook');
+
+
+use App\Http\Controllers\AsaasController;
+
+// Rota da página PIX (exibe a blade pix.blade.php)
+Route::view('/donations/pix', 'donations.pix')->name('donations.asaas.form');
+
+// Rota POST para criar a cobrança no Asaas via controller
+Route::post('/donations/asaas/create', [AsaasController::class, 'createDonation'])->name('donations.asaas.create');
