@@ -95,12 +95,20 @@ class AsaasController extends Controller
     public function webhook(Request $request)
     {
         // Valida token webhook
-        $expectedToken = config('services.asaas.webhook_token');
-        $receivedToken = $request->header('asaas-signature');
+        $signature = $request->header('asaas-signature');
+        $secret = config('services.asaas.webhook_token'); // usa o token como chave HMAC
 
-        if (!$expectedToken || $receivedToken !== $expectedToken) {
-            Log::warning('Invalid Asaas webhook token received.');
-            return response()->json(['error' => 'Invalid webhook token'], 401);
+        $calculatedSignature = base64_encode(
+            hash_hmac('sha256', $request->getContent(), $secret, true)
+        );
+
+        if ($signature !== $calculatedSignature) {
+            Log::warning('Invalid Asaas webhook signature.', [
+                'received' => $signature,
+                'calculated' => $calculatedSignature,
+                'body' => $request->getContent(),
+            ]);
+            return response()->json(['error' => 'Invalid signature'], 401);
         }
 
         $data = $request->all();
