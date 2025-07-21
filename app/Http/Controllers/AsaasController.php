@@ -94,8 +94,8 @@ class AsaasController extends Controller
 
     public function webhook(Request $request)
     {
-        $receivedToken = $request->query('token');
-        $expectedToken = config('services.asaas.webhook_token');
+        $receivedToken = $request->header('asaas-access-token');
+        $expectedToken = config('services.asaas.webhook_token'); // defina no .env
 
         if (!$receivedToken || $receivedToken !== $expectedToken) {
             Log::warning('Invalid Asaas webhook token.', [
