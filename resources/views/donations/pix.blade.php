@@ -2,8 +2,8 @@
 
 @section('content')
 <div 
-    x-data="donationForm()"
-    x-init="init()"
+    x-data="donationForm()" 
+    x-init="init()" 
     x-show="show"
     x-transition:enter="transition ease-out duration-700"
     x-transition:enter-start="opacity-0 translate-y-4"
@@ -16,42 +16,45 @@
     </h2>
 
     <p class="text-sm text-center text-gray-300 mb-6">
-        <span class="italic text-xs text-yellow-300">1000 SC = R$ 5,20</span>
+        <span class="italic text-xs text-yellow-300">R$ 5,20 = 1000 SC</span>
     </p>
 
     <form action="{{ route('donations.asaas.create') }}" method="POST" class="space-y-6" @submit="handleLoading">
         @csrf
+
         <div class="flex items-center gap-2">
             <!-- BRL input -->
-            <div class="w-full">
-                <label for="brl" class="block text-sm text-gray-300 mb-1">Amount (BRL)</label>
+            <div class="w-1/2">
+                <label for="brl" class="block text-sm text-gray-300 mb-1">BRL</label>
                 <input 
                     type="number" 
-                    id="brl"
-                    name="amount"
                     min="1" 
                     step="0.10" 
                     x-model="brl" 
                     @input="syncFromBRL" 
                     class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 shadow-sm"
-                    required
+                >
+            </div>
+
+            <!-- <=> Icon -->
+            <div class="text-yellow-400 text-xl self-center font-bold select-none">⇄</div>
+
+            <!-- SC input -->
+            <div class="w-1/2">
+                <label for="sc" class="block text-sm text-gray-300 mb-1">Star Credits (SC)</label>
+                <input 
+                    type="number" 
+                    min="1000" 
+                    step="1000" 
+                    x-model="sc" 
+                    @input="syncFromSC" 
+                    class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 shadow-sm"
                 >
             </div>
         </div>
 
-        <!-- SC input -->
-        <div>
-            <label for="sc" class="block text-sm text-gray-300 mb-1">Star Credits (SC)</label>
-            <input 
-                type="number" 
-                id="sc" 
-                x-model="sc" 
-                @input="syncFromSC" 
-                class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 shadow-sm"
-                required
-                min="1000"
-            >
-        </div>
+        <!-- Hidden amount field -->
+        <input type="hidden" name="amount" :value="Number(brl).toFixed(2)" />
 
         <button 
             type="submit"
@@ -114,7 +117,7 @@
         return {
             brl: 5.20,
             sc: 1000,
-            rate: 192.31, // 1000 SC / 5.20 BRL ≈ 192.31 SC/BRL
+            rate: 192.31, // 1000 SC / 5.20 BRL
             show: false,
             showModal: false,
             formEl: null,
@@ -123,11 +126,9 @@
                 this.syncFromBRL();
             },
             syncFromBRL() {
-                let calculatedSC = Math.round(this.brl * this.rate);
-                this.sc = calculatedSC < 1000 ? 1000 : calculatedSC;
+                this.sc = Math.round(this.brl * this.rate);
             },
             syncFromSC() {
-                if (this.sc < 1000) this.sc = 1000;
                 this.brl = parseFloat((this.sc / this.rate).toFixed(2));
             },
             handleLoading(event) {
