@@ -26,7 +26,7 @@
     @endif
 
     <p class="text-sm text-center text-gray-300 mb-6">
-        <span class="italic text-xs text-yellow-300">1 USD = 1000 SC</span>
+        <span class="italic text-xs text-yellow-300">1 USD = 1050 SC</span>
     </p>
 
     <form action="{{ route('nowpayments.buy') }}" method="POST" class="space-y-6" @submit="handleLoading">
@@ -134,7 +134,7 @@
         return {
             usd: 30, // O valor inicial será definido dinamicamente no init()
             sc: 30000,
-            rate: 1000,
+            rate: 1050,
             show: false,
             showModal: false,
             formEl: null,
