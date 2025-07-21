@@ -65,6 +65,7 @@
             <select name="pay_currency" required x-model="selectedCurrency"
                 class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 shadow-sm">
                 <option value="btc">Bitcoin (BTC)</option>
+                <option value="busdt">USDT (BEP20)</option>
                 <option value="usdttrc20">USDT (TRC20)</option>
                 <option value="eth">Ethereum (ETH)</option>
                 <option value="ltc">Litecoin (LTC)</option>
