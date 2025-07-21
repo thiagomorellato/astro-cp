@@ -19,7 +19,7 @@
         <span class="italic text-xs text-yellow-300">R$ 5,20 = 1000 SC</span>
     </p>
 
-    <form action="{{ route('donations.asaas.create') }}" method="POST" class="space-y-6" @submit="handleLoading">
+    <form action="{{ route('donations.asaas.create') }}" method="POST" class="space-y-6" @submit="handleLoading" x-ref="form">
         @csrf
 
         <div class="flex items-center gap-2">
@@ -27,6 +27,7 @@
             <div class="w-1/2">
                 <label for="brl" class="block text-sm text-gray-300 mb-1">BRL</label>
                 <input 
+                    id="brl"
                     type="number" 
                     min="1" 
                     step="0.10" 
@@ -43,6 +44,7 @@
             <div class="w-1/2">
                 <label for="sc" class="block text-sm text-gray-300 mb-1">Star Credits (SC)</label>
                 <input 
+                    id="sc"
                     type="number" 
                     min="1000" 
                     step="1000" 
@@ -53,8 +55,9 @@
             </div>
         </div>
 
-        <!-- Hidden amount field -->
+        <!-- Hidden inputs -->
         <input type="hidden" name="amount" :value="Number(brl).toFixed(2)" />
+        <input type="hidden" name="cpf" x-ref="hiddenCpf" />
 
         <button 
             type="submit"
@@ -88,15 +91,16 @@
             <h3 class="text-xl font-semibold text-yellow-400 mb-3 text-center font-['Cinzel'] drop-shadow">
                 Confirm Donation
             </h3>
-            <div>
-                <label for="cpf" class="block text-sm text-gray-300 mb-1">CPF</label>
+            <div class="mb-4">
+                <label for="cpf_modal" class="block text-sm text-gray-300 mb-1">CPF</label>
                 <input 
+                    id="cpf_modal"
                     type="text" 
-                    name="cpf" 
-                    required
                     maxlength="14"
                     placeholder="000.000.000-00"
+                    x-model="cpfModal" 
                     class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 shadow-sm"
+                    required
                 >
             </div>
             <p class="text-sm text-center text-gray-200 mb-6">
@@ -131,7 +135,9 @@
             rate: 192.31, // 1000 SC / 5.20 BRL
             show: false,
             showModal: false,
+            cpfModal: '',
             formEl: null,
+
             init() {
                 this.show = true;
                 this.syncFromBRL();
@@ -148,6 +154,16 @@
                 this.showModal = true;
             },
             confirmDonation() {
+                // Simple CPF validation: 11 digits numeric
+                const cpf = this.cpfModal.replace(/\D/g, '');
+                if (cpf.length !== 11) {
+                    alert('Please enter a valid CPF with 11 digits.');
+                    return;
+                }
+
+                // Copy CPF to hidden input
+                this.$refs.hiddenCpf.value = this.cpfModal;
+
                 this.showModal = false;
 
                 const btn = document.getElementById('donate-btn');
