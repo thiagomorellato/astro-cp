@@ -88,6 +88,17 @@
             <h3 class="text-xl font-semibold text-yellow-400 mb-3 text-center font-['Cinzel'] drop-shadow">
                 Confirm Donation
             </h3>
+            <div>
+                <label for="cpf" class="block text-sm text-gray-300 mb-1">CPF</label>
+                <input 
+                    type="text" 
+                    name="cpf" 
+                    required
+                    maxlength="14"
+                    placeholder="000.000.000-00"
+                    class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 shadow-sm"
+                >
+            </div>
             <p class="text-sm text-center text-gray-200 mb-6">
                 Are you sure you want to donate 
                 <span class="font-bold text-yellow-300" x-text="'R$ ' + brl.toFixed(2)"></span>?

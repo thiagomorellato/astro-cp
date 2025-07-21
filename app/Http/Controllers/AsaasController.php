@@ -9,9 +9,6 @@ use Illuminate\Support\Facades\DB;
 
 class AsaasController extends Controller
 {
-    /**
-     * Cria a cobrança no Asaas e redireciona para a página de pagamento.
-     */
     public function createDonation(Request $request)
     {
         // 1. Verifica sessão
@@ -20,49 +17,55 @@ class AsaasController extends Controller
             return redirect('/donations/payment-failed')->with('error', 'User session expired. Please log in again.');
         }
 
-        // 2. Busca account_id no banco
+        // 2. Busca dados do usuário
         $user = DB::connection('ragnarok')->table('login')->where('userid', $userid)->first();
         if (!$user || !isset($user->account_id)) {
             return redirect('/donations/payment-failed')->with('error', 'Unable to find account information.');
         }
         $accountId = $user->account_id;
+        $email = $user->email ?? 'no-reply@astrocp.fake'; // fallback
 
-        // 3. Captura o valor enviado pelo form (BRL)
+        // 3. Captura valor e CPF
         $amount = number_format((float) $request->input('amount', 5.20), 2, '.', '');
         if ($amount < 1) {
             return back()->with('error', 'Invalid amount.');
         }
 
-        // 4. Cria a cobrança no Asaas via API
-        $asaasApiKey = config('services.asaas.api_key');
-        $asaasUrl = 'https://www.asaas.com/api/v3/payments';
+        $cpf = preg_replace('/\D/', '', $request->input('cpf'));
+        if (strlen($cpf) !== 11) {
+            return back()->with('error', 'Invalid CPF.');
+        }
 
+        // 4. Define dados da API
+        $asaasApiKey = config('services.asaas.api_key');
+        $asaasUrl = config('services.asaas.base_url');
+
+        // 5. Obtém ou cria customer_id
+        $customerId = $this->getOrCreateAsaasCustomer($accountId, $cpf, $email, $userid, $asaasApiKey, $asaasUrl);
+        if (!$customerId) {
+            return redirect('/donations/payment-failed')->with('error', 'Failed to create or retrieve customer on Asaas.');
+        }
+
+        // 6. Cria cobrança
         $response = Http::withHeaders([
             'access_token' => $asaasApiKey,
             'Content-Type' => 'application/json',
-        ])->post($asaasUrl, [
-            'customer' => $this->getAsaasCustomerId($accountId), // Você deve implementar a lógica pra obter o customer_id do Asaas aqui
-            'billingType' => 'PIX', // Pode ser PIX, BOLETO, CREDIT_CARD, etc.  
+        ])->post("{$asaasUrl}payments", [
+            'customer' => $customerId,
+            'billingType' => 'PIX',
             'value' => $amount,
-            'dueDate' => now()->addDays(1)->format('Y-m-d'), // Vencimento para amanhã
+            'dueDate' => now()->addDays(1)->format('Y-m-d'),
             'description' => "Donation for account ID {$accountId}",
             'externalReference' => "astro-asaas-{$accountId}-" . time(),
             'notificationDisabled' => false,
-            'paymentDate' => null,
-            'postalService' => false,
         ]);
 
-        // 5. Tratamento da resposta
         if ($response->failed()) {
-            Log::error('Failed to create Asaas payment', [
-                'account_id' => $accountId,
-                'response' => $response->body(),
-            ]);
+            Log::error('Asaas payment creation failed', ['account_id' => $accountId, 'response' => $response->body()]);
             return redirect('/donations/payment-failed')->with('error', 'Failed to create payment invoice with Asaas.');
         }
 
         $paymentData = $response->json();
-
         $paymentId = $paymentData['id'] ?? null;
         $paymentLink = $paymentData['invoiceUrl'] ?? $paymentData['paymentLink'] ?? null;
 
@@ -71,50 +74,86 @@ class AsaasController extends Controller
             return redirect('/donations/payment-failed')->with('error', 'Invalid response from Asaas.');
         }
 
-        // 6. Salva no banco a doação como PENDING
+        // 7. Salva no banco
         DB::connection('ragnarok')->table('donations_as')->insert([
             'account_id' => $accountId,
-            'amount_usd' => null,  // Não aplicável no PIX (opcional você pode criar um campo amount_brl se quiser)
-            'amount_brl' => $amount, // Se quiser, adicione essa coluna no SQL abaixo
+            'amount_brl' => $amount,
             'status' => 'pending',
             'asaas_payment_id' => $paymentId,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        Log::info("Asaas payment created successfully. Payment ID: {$paymentId}, Account ID: {$accountId}");
+        Log::info("Asaas payment created", ['payment_id' => $paymentId, 'account_id' => $accountId]);
 
-        // 7. Redireciona o usuário para a página oficial de pagamento Asaas
         return redirect()->away($paymentLink);
     }
 
-    /**
-     * Webhook para processar notificações do Asaas (esqueleto).
-     * Você precisa configurar o endpoint no painel Asaas e implementar a lógica.
-     */
     public function webhook(Request $request)
     {
         $data = $request->all();
         Log::info('Asaas webhook received', $data);
 
-        // TODO: validar assinatura, validar evento e atualizar status no banco
-        // Exemplo: atualizar a doação para 'success' quando pagamento confirmado
+        // Validação básica
+        if (!isset($data['event']) || !isset($data['payment']['id'])) {
+            return response()->json(['error' => 'Invalid payload'], 400);
+        }
+
+        $event = $data['event'];
+        $paymentId = $data['payment']['id'];
+
+        $status = match ($event) {
+            'PAYMENT_RECEIVED', 'PAYMENT_CONFIRMED' => 'success',
+            'PAYMENT_DELETED' => 'cancelled',
+            default => null
+        };
+
+        if ($status) {
+            DB::connection('ragnarok')->table('donations_as')
+                ->where('asaas_payment_id', $paymentId)
+                ->update([
+                    'status' => $status,
+                    'updated_at' => now(),
+                ]);
+
+            Log::info("Donation status updated", ['payment_id' => $paymentId, 'status' => $status]);
+        }
 
         return response()->json(['message' => 'Webhook received']);
     }
 
-    /**
-     * Método para pegar o customer_id do Asaas baseado no account_id do Ragnarok.
-     * Você precisa implementar a sua lógica para relacionar usuário do seu sistema com o customer do Asaas.
-     */
-    private function getAsaasCustomerId(int $accountId): ?string
+    private function getOrCreateAsaasCustomer($accountId, $cpf, $email, $username, $asaasApiKey, $asaasUrl): ?string
     {
-        // Exemplo: buscar na tabela que você salvar o customer_id do Asaas para o usuário
-        $customer = DB::connection('ragnarok')->table('asaas_customers')
-            ->where('account_id', $accountId)
-            ->first();
+        $existing = DB::connection('ragnarok')->table('asaas_customers')->where('account_id', $accountId)->first();
+        if ($existing && isset($existing->asaas_customer_id)) {
+            return $existing->asaas_customer_id;
+        }
 
-        return $customer->asaas_customer_id ?? null;
+        $response = Http::withHeaders([
+            'access_token' => $asaasApiKey,
+        ])->post("{$asaasUrl}customers", [
+            'name' => $username,
+            'email' => $email,
+            'cpfCnpj' => $cpf,
+            'notificationDisabled' => true,
+        ]);
+
+        if ($response->failed()) {
+            Log::error('Failed to create Asaas customer', ['account_id' => $accountId, 'response' => $response->body()]);
+            return null;
+        }
+
+        $customerId = $response->json()['id'] ?? null;
+
+        if ($customerId) {
+            DB::connection('ragnarok')->table('asaas_customers')->insert([
+                'account_id' => $accountId,
+                'asaas_customer_id' => $customerId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        return $customerId;
     }
 }
-

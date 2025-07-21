@@ -34,7 +34,7 @@ return [
     'paypal' => [
         'client_id' => env('PAYPAL_CLIENT_ID'),
         'secret' => env('PAYPAL_SECRET'),
-        'base_url' => env('PAYPAL_BASE_URL', 'https://api-m.sandbox.paypal.com'),
+        'base_url' => env('PAYPAL_BASE_URL', 'https://api-m.paypal.com'),
         'webhook_id' => env('PAYPAL_WEBHOOK_ID'),
         'sub_webhook_id' => env('PAYPAL_SUB_WEBHOOK_ID'),
         'conversion_rate' => 1000,
@@ -44,6 +44,12 @@ return [
         'key' => env('NOWPAYMENTS_API_KEY'),
         'ipn_secret' => env('NOWPAYMENTS_IPN_SECRET'),
         'url' => env('NOWPAYMENTS_API_URL', 'https://api.nowpayments.io/v1'),
+    ],
+
+    'asaas' => [
+    'api_key' => env('ASAAS_API_KEY'),
+    'base_url' => env('ASAAS_BASE_URL', 'https://www.asaas.com/api/v3/'),
+    'webhook_token' => env('ASAAS_WEBHOOK_TOKEN'),
     ],
 
 ];
