@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\DB;
 
 class AsaasController extends Controller
 {
+    // Taxa de conversão: R$5,20 para 1000 SC
+    private const RATE_BRL_PER_1000_SC = 5.20;
+
     public function createDonation(Request $request)
     {
         // 1. Verifica sessão
@@ -23,7 +26,7 @@ class AsaasController extends Controller
             return redirect('/donations/payment-failed')->with('error', 'Unable to find account information.');
         }
         $accountId = $user->account_id;
-        $email = $user->email ?? 'no-reply@astrocp.fake'; // fallback
+        $email = $user->email ?? 'no-reply@astrocp.fake';
 
         // 3. Captura valor e CPF
         $amount = number_format((float) $request->input('amount', 5.20), 2, '.', '');
@@ -38,7 +41,7 @@ class AsaasController extends Controller
 
         // 4. Define dados da API
         $asaasApiKey = config('services.asaas.api_key');
-        $asaasUrl = config('services.asaas.base_url');
+        $asaasUrl = rtrim(config('services.asaas.base_url'), '/') . '/';
 
         // 5. Obtém ou cria customer_id
         $customerId = $this->getOrCreateAsaasCustomer($accountId, $cpf, $email, $userid, $asaasApiKey, $asaasUrl);
@@ -48,7 +51,7 @@ class AsaasController extends Controller
 
         // 6. Cria cobrança
         $response = Http::withHeaders([
-            'access_token' => $asaasApiKey,
+            'Authorization' => "Bearer {$asaasApiKey}",
             'Content-Type' => 'application/json',
         ])->post("{$asaasUrl}payments", [
             'customer' => $customerId,
@@ -91,10 +94,18 @@ class AsaasController extends Controller
 
     public function webhook(Request $request)
     {
+        // Valida token webhook
+        $expectedToken = config('services.asaas.webhook_token');
+        $receivedToken = $request->header('asaas-signature');
+
+        if (!$expectedToken || $receivedToken !== $expectedToken) {
+            Log::warning('Invalid Asaas webhook token received.');
+            return response()->json(['error' => 'Invalid webhook token'], 401);
+        }
+
         $data = $request->all();
         Log::info('Asaas webhook received', $data);
 
-        // Validação básica
         if (!isset($data['event']) || !isset($data['payment']['id'])) {
             return response()->json(['error' => 'Invalid payload'], 400);
         }
@@ -108,18 +119,56 @@ class AsaasController extends Controller
             default => null
         };
 
-        if ($status) {
+        if (!$status) {
+            return response()->json(['message' => 'Event ignored'], 200);
+        }
+
+        // Busca doação no banco
+        $donation = DB::connection('ragnarok')->table('donations_as')
+            ->where('asaas_payment_id', $paymentId)
+            ->first();
+
+        if (!$donation) {
+            Log::warning("Donation not found for Asaas payment ID: {$paymentId}");
+            return response()->json(['error' => 'Donation not found'], 404);
+        }
+
+        if ($donation->status === 'success' && $status === 'success') {
+            Log::info("Donation {$donation->id} already processed as success.");
+            return response()->json(['message' => 'Event already processed'], 200);
+        }
+
+        // Se status é sucesso, adiciona créditos
+        if ($status === 'success') {
+            $accountId = $donation->account_id;
+            $amount = $donation->amount_brl;
+
+            // Calcula créditos: R$5,20 = 1000 SC
+            $credits = (int) floor(($amount / self::RATE_BRL_PER_1000_SC) * 1000);
+
+            $this->addCreditsToAccount($accountId, $credits);
+
+            // Atualiza doação para sucesso + créditos
             DB::connection('ragnarok')->table('donations_as')
-                ->where('asaas_payment_id', $paymentId)
+                ->where('id', $donation->id)
+                ->update([
+                    'status' => 'success',
+                    'credits' => $credits,
+                    'updated_at' => now(),
+                ]);
+
+            Log::info("Credits added to account {$accountId}: {$credits}");
+        } else {
+            // Atualiza status para cancelado ou outros
+            DB::connection('ragnarok')->table('donations_as')
+                ->where('id', $donation->id)
                 ->update([
                     'status' => $status,
                     'updated_at' => now(),
                 ]);
-
-            Log::info("Donation status updated", ['payment_id' => $paymentId, 'status' => $status]);
         }
 
-        return response()->json(['message' => 'Webhook received']);
+        return response()->json(['message' => 'Webhook processed']);
     }
 
     private function getOrCreateAsaasCustomer($accountId, $cpf, $email, $username, $asaasApiKey, $asaasUrl): ?string
@@ -130,7 +179,8 @@ class AsaasController extends Controller
         }
 
         $response = Http::withHeaders([
-            'access_token' => $asaasApiKey,
+            'Authorization' => "Bearer {$asaasApiKey}",
+            'Content-Type' => 'application/json',
         ])->post("{$asaasUrl}customers", [
             'name' => $username,
             'email' => $email,
@@ -155,5 +205,26 @@ class AsaasController extends Controller
         }
 
         return $customerId;
+    }
+
+    private function addCreditsToAccount(int $accountId, int $credits)
+    {
+        $existing = DB::connection('ragnarok')->table('acc_reg_num')
+            ->where('account_id', $accountId)
+            ->where('key', '#CASHPOINTS')
+            ->first();
+
+        if ($existing) {
+            DB::connection('ragnarok')->table('acc_reg_num')
+                ->where('account_id', $accountId)
+                ->where('key', '#CASHPOINTS')
+                ->increment('value', $credits);
+        } else {
+            DB::connection('ragnarok')->table('acc_reg_num')->insert([
+                'account_id' => $accountId,
+                'key' => '#CASHPOINTS',
+                'value' => $credits,
+            ]);
+        }
     }
 }
