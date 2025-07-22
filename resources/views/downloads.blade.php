@@ -15,6 +15,10 @@
       <ul class="text-left space-y-2 text-indigo-300">
         <li><a href="https://drive.google.com/file/d/1yvzfjg_J_LNEGee1B7LqTYu-MkFJKV3N/view?usp=sharing" class="hover:text-white hover:underline">⬇️ Full Client</a></li>
       </ul>
+<h2 class="text-2xl font-['Cinzel'] text-yellow-500 mb-2">Download</h2>
+      <ul class="text-left space-y-2 text-indigo-300">
+        <li><a href="https://drive.google.com/file/d/1i7x3L7WZEg0AU1GRR9gsgA55prpD7rJw/view?usp=sharing" class="hover:text-white hover:underline">⬇️ Analog Patch</a></li>
+      </ul>
     </div>
 @endsection
 
